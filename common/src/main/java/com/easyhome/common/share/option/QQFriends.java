@@ -6,6 +6,8 @@ import android.os.Bundle;
 import com.easyhome.common.R;
 import com.easyhome.common.share.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.utils.TextUtil;
+import com.easyhome.common.utils.URIUtil;
 import com.tencent.tauth.Tencent;
 
 /**
@@ -42,26 +44,30 @@ public class QQFriends extends QQConnect {
         switch (object.getType()) {
             case TYPE_IMAGE://只支持本地
                 shareType = Tencent.SHARE_TO_QQ_TYPE_IMAGE;
-                params.putString(Tencent.SHARE_TO_QQ_TITLE, "分享音乐,来自下豆瓣FM：The Chordettes" + object.getTitle());
-                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, "http://douban.fm/?start=8508g3c27g-3&cid=-3" + object.getMediaUrl());
-                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, "豆瓣音乐-Lollipop <Stand By Me> 1990 字数不够？再加点？" + object.getSecondTitle());
-                params.putString(Tencent.SHARE_TO_QQ_IMAGE_LOCAL_URL, "/storage/emulated/0/tencent/ReaderZone/Adv/1228_m.png");// + object.getThumbnailUrl()
+                params.putString(Tencent.SHARE_TO_QQ_TITLE, object.getTitle());
+                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, object.getRedirectUrl());
+                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, object.getSecondTitle());
+                params.putString(Tencent.SHARE_TO_QQ_IMAGE_LOCAL_URL, object.getThumbnailUrl()[0]);
                 break;
             case TYPE_TEXT:
+                params.putString(Tencent.SHARE_TO_QQ_TITLE, object.getTitle());
+                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, object.getRedirectUrl());
+                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, object.getSecondTitle());
+                break;
             case TYPE_WEBURL:
-                params.putString(Tencent.SHARE_TO_QQ_TITLE, "分享音乐,来自下豆瓣FM：The Chordettes");// + object.getTitle()
-                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, "http://douban.fm/?start=8508g3c27g-3&cid=-3");// + object.getMediaUrl()
-                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, "豆瓣音乐-Lollipop <Stand By Me> 1990 字数不够？再加点？");// + object.getSecondTitle()
-                params.putString(Tencent.SHARE_TO_QQ_IMAGE_URL, "http://img3.douban.com/lpic/s3635685.jpg");// + object.getThumbnailUrl()
+                params.putString(Tencent.SHARE_TO_QQ_TITLE, object.getTitle());
+                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, object.getRedirectUrl());
+                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, object.getSecondTitle());
+                params.putString(Tencent.SHARE_TO_QQ_IMAGE_URL, object.getThumbnailUrl()[0]);
                 break;
             case TYPE_MUSIC:
             case TYPE_VIDEO:
                 shareType = Tencent.SHARE_TO_QQ_TYPE_AUDIO;
-                params.putString(Tencent.SHARE_TO_QQ_TITLE, "不要说话" + object.getTitle());
-                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, "http://y.qq.com/i/song.html?songid=XXX&source=mobileQQ#wechat_redirect");// + object.getMediaUrl()
-                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, "专辑名：不想放手歌手名：陈奕迅" + object.getSecondTitle());
-                params.putString(Tencent.SHARE_TO_QQ_IMAGE_URL, "http://imgcache.qq.com/music/photo/mid_album_300/V/E/000J1pJ50cDCVE.jpg"); // + object.getThumbnailUrl()
-                params.putString(Tencent.SHARE_TO_QQ_AUDIO_URL, "http://stream14.qqmusic.qq.com/30432451.mp3?key=ABD30A88B30BA76C1435598BC67F69EA741DE4082BF8E089&qqmusic_fromtag=15");//object.getMediaUrl()
+                params.putString(Tencent.SHARE_TO_QQ_TITLE, object.getTitle());
+                params.putString(Tencent.SHARE_TO_QQ_TARGET_URL, object.getRedirectUrl());
+                params.putString(Tencent.SHARE_TO_QQ_SUMMARY, object.getSecondTitle());
+                params.putString(Tencent.SHARE_TO_QQ_IMAGE_URL, object.getThumbnailUrl()[0]);
+                params.putString(Tencent.SHARE_TO_QQ_AUDIO_URL, object.getMediaUrl());
                 break;
         }
 
@@ -91,7 +97,68 @@ public class QQFriends extends QQConnect {
     }
 
     @Override
-    public boolean validateCheck(IShareObject... shareObject) {
-        return false;
+    public boolean validateCheck(IShareObject... shareObjects) {
+        if (shareObjects == null || shareObjects.length == 0) {
+            logE("数据为NULL或者空");
+            notifyEvent(getString(R.string.share_invalidate_datas));
+            return false;
+        }
+
+        for (IShareObject object : shareObjects) {
+            if (object == null) {
+                notifyEvent(getString(R.string.share_invalidate_datas));
+                return false;
+            }
+
+            if (TextUtil.isEmpty(object.getTitle())) {
+                notifyEvent(getString(R.string.share_text_empty));
+                return false;
+            } else if(TextUtil.isEmpty(object.getSecondTitle())) {
+                notifyEvent(getString(R.string.share_text_title_empty));
+                return false;
+            } else if(TextUtil.isEmpty(object.getRedirectUrl())
+                    || !URIUtil.isValidHttpUri(object.getRedirectUrl())) {
+                notifyEvent(getString(R.string.share_invalidate_redirect_url));
+                return false;
+            }
+
+            IShareObject.TYPE type = object.getType();
+
+            switch (type) {
+                case TYPE_WEBURL:
+                    String[] urls = object.getThumbnailUrl();
+                    if (urls == null || urls.length == 0 || TextUtil.isEmpty(urls[0])
+                            || !URIUtil.isValidHttpUri(urls[0])) {
+                        notifyEvent(getString(R.string.share_webpage_invalidate_url));
+                        return false;
+                    }
+                    break;
+                case TYPE_IMAGE:
+                    String[] local = object.getThumbnailUrl();
+                    if (local == null || local.length == 0 || TextUtil.isEmpty(local[0])
+                            || !URIUtil.isValidSdcardUri(local[0])) {
+                        notifyEvent(getString(R.string.share_image_only_for_local));
+                        return false;
+                    }
+                    break;
+                case TYPE_MUSIC:
+                case TYPE_VIDEO:
+                    String[] online = object.getThumbnailUrl();
+                    if (online == null || online.length == 0 || TextUtil.isEmpty(online[0])
+                            || !URIUtil.isValidHttpUri(online[0])) {
+                        notifyEvent(getString(R.string.share_image_invalid_url));
+                        return false;
+                    } else if(TextUtil.isEmpty(object.getMediaUrl())
+                            || !URIUtil.isValidHttpUri(object.getMediaUrl())) {
+                        notifyEvent(type == IShareObject.TYPE.TYPE_IMAGE ?
+                                getString(R.string.share_music_invalidate_url)
+                                :
+                                getString(R.string.share_video_invalidate_url));
+                        return false;
+                    }
+                    break;
+            }
+        }
+        return true;
     }
 }

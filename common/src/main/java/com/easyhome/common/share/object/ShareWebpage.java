@@ -28,12 +28,8 @@ public class ShareWebpage extends BaseShareObject {
     }
 
     @Override
-    public String getMediaUrl() {
+    public String getRedirectUrl() {
         return url;
     }
 
-    @Override
-    public String getMessage() {
-        return "share a webpage";
-    }
 }

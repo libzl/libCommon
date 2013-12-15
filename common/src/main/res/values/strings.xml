@@ -40,9 +40,22 @@
     <string name="share_music_invalidate_url">音频试听链接为空</string>
     <string name="share_video_invalidate_url">视频播放链接为空</string>
     <string name="share_image_empty">图片数据为空</string>
-    <string name="share_image_unsupport_online">只支持本地图片分享</string>
     <string name="share_webpage_invalidate_url">网址为空或者无效</string>
     <string name="share_invalidate_datas">分享数据无效</string>
+    <string name="share_text_too_long">文本长度太长</string>
+    <string name="share_music_invalidate_redirect_url">跳转详情url为空或者无效</string>
+    <string name="share_music_invalidate_duration">播放时长为0或者无效</string>
+    <string name="share_music_title_empty">歌曲名或者描述为空</string>
+    <string name="share_video_title_empty">视频名或者描述为空</string>
+    <string name="share_video_invalidate_duration">视频时长无效</string>
+    <string name="share_video_invalidate_redirect_url">视频跳转url无效</string>
+    <string name="share_image_title_empty">图片标题为空</string>
+    <string name="share_image_desc_empty">图片描述为空</string>
+    <string name="share_image_invalid_detail_url">图片跳转url无效</string>
+    <string name="share_text_title_empty">文本标题为空</string>
+    <string name="share_invalidate_redirect_url">无效跳转url</string>
+    <string name="share_image_only_for_local">只支持本地图片</string>
+    <string name="share_image_invalid_url">无效的网络图片链接</string>
 
 
 </resources>

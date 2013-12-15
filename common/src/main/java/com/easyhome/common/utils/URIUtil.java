@@ -3,6 +3,7 @@ package com.easyhome.common.utils;
 
 import android.annotation.SuppressLint;
 import android.net.Uri;
+import android.os.Environment;
 
 /**
  * Uri工具类
@@ -69,5 +70,13 @@ public class URIUtil {
             return uri.getPath();
         }
         return path;
+    }
+
+    public static boolean isValidSdcardUri(String uri) {
+        String dir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        if (uri.startsWith(dir)) {
+            return true;
+        }
+        return false;
     }
 }

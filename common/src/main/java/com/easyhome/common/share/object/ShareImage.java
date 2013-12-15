@@ -49,8 +49,4 @@ public class ShareImage extends BaseShareObject {
         return mShareImageUrl;
     }
 
-    @Override
-    public String getMessage() {
-        return "share a image";
-    }
 }

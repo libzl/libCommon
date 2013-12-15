@@ -64,6 +64,12 @@ public interface IShareObject {
     int getContentSize();
 
     /**
+     * 获得调转URL：音乐查看详情等.
+     * @return
+     */
+    String getRedirectUrl();
+
+    /**
      * 分享数据类型
      */
     public enum TYPE {

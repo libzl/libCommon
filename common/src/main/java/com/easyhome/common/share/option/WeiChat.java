@@ -184,6 +184,11 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
             return false;
         }
 
+        if (TextUtil.isEmpty(shareObject.getTitle()) || TextUtil.isEmpty(shareObject.getSecondTitle())) {
+            notifyEvent(getString(R.string.share_text_title_empty));
+            return false;
+        }
+
         IShareObject.TYPE type = shareObject.getType();
         boolean result = true;
         switch (type) {
@@ -219,17 +224,16 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
                     notifyEvent(getString(R.string.share_image_empty));
                     result = false;
                 } else if(bitmap == null && urls != null) {
-                    notifyEvent(getString(R.string.share_image_unsupport_online));
+                    notifyEvent(getString(R.string.share_image_only_for_local));
                     result = false;
                 }
                 break;
             case TYPE_WEBURL:
-                String url = shareObject.getMediaUrl();
+                String url = shareObject.getRedirectUrl();
                 if (TextUtil.isEmpty(url) || !URIUtil.isValidHttpUri(url)) {
                     notifyEvent(getString(R.string.share_webpage_invalidate_url));
                     result = false;
                 }
-
                 break;
         }
         return result;
@@ -267,7 +271,7 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
                 mediaObject = new WXImageObject(shareObject.getThumbnail());
                 break;
             case TYPE_WEBURL:
-                mediaObject = new WXWebpageObject(shareObject.getMediaUrl());
+                mediaObject = new WXWebpageObject(shareObject.getRedirectUrl());
                 break;
         }
 

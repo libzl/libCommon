@@ -15,10 +15,12 @@ import com.easyhome.common.share.ShareConfiguration;
 import com.easyhome.common.share.net.AsyncWeiboRunner;
 import com.easyhome.common.share.net.RequestListener;
 import com.easyhome.common.utils.TextUtil;
+import com.easyhome.common.utils.URIUtil;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.MusicObject;
 import com.sina.weibo.sdk.api.TextObject;
 import com.sina.weibo.sdk.api.VideoObject;
+import com.sina.weibo.sdk.api.WebpageObject;
 import com.sina.weibo.sdk.api.WeiboMessage;
 import com.sina.weibo.sdk.api.WeiboMultiMessage;
 import com.sina.weibo.sdk.api.share.BaseRequest;
@@ -60,7 +62,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     private SsoHandler mSsoHandler;
     private IWeiboShareAPI mWeiboShareAPI;
 
-    public WeiBlog(){
+    public WeiBlog() {
     }
 
     public WeiBlog(Context context, IShareObject shareObject) {
@@ -265,8 +267,8 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
         } else if (ACTION_SHARE.equals(action)
                 ||
                 (TYPE_NEW_INTENT.equals(type) && mWeiboShareAPI != null
-                && (mWeiboShareAPI.handleWeiboResponse(intent, this)
-                || mWeiboShareAPI.handleWeiboRequest(intent, this)))) {
+                        && (mWeiboShareAPI.handleWeiboResponse(intent, this)
+                        || mWeiboShareAPI.handleWeiboRequest(intent, this)))) {
             return true;
         }
         return false;
@@ -320,6 +322,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
 
     /**
      * 可发送多个内容
+     *
      * @param shareObjects
      */
     private void sendMultiMessage(IShareObject[] shareObjects) {
@@ -343,6 +346,16 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     mediaObject.text = shareObject.getMessage();
                     weiboMessage.textObject = mediaObject;
                     break;
+                case TYPE_WEBURL:
+                    WebpageObject webpageObject = new WebpageObject();
+                    webpageObject.actionUrl = shareObject.getRedirectUrl();
+                    webpageObject.identify = Utility.generateGUID();
+                    webpageObject.defaultText = shareObject.getMessage();
+                    webpageObject.setThumbImage(shareObject.getThumbnail());
+                    webpageObject.title = shareObject.getTitle();
+                    webpageObject.description = shareObject.getSecondTitle();
+                    weiboMessage.mediaObject = webpageObject;
+                    break;
                 case TYPE_IMAGE:
                     TextObject messageForImage = new TextObject();
                     messageForImage.text = shareObject.getMessage();
@@ -358,7 +371,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     weiboMessage.textObject = messageForAudio;
 
                     MusicObject musicObject = new MusicObject();
-                    musicObject.actionUrl = shareObject.getMessage();
+                    musicObject.actionUrl = shareObject.getRedirectUrl();
                     musicObject.identify = Utility.generateGUID();
                     musicObject.title = shareObject.getTitle();
                     musicObject.description = shareObject.getSecondTitle();
@@ -401,9 +414,6 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     }
 
     private void sendSingleMessage(IShareObject shareObject) {
-        if (shareObject == null) {
-            return;
-        }
         WeiboMessage weiboMessage = new WeiboMessage();
 
         IShareObject.TYPE type = shareObject.getType();
@@ -415,9 +425,19 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                 mediaObject.text = shareObject.getMessage();
                 weiboMessage.mediaObject = mediaObject;
                 break;
+            case TYPE_WEBURL:
+                WebpageObject webpageObject = new WebpageObject();
+                webpageObject.actionUrl = shareObject.getRedirectUrl();
+                webpageObject.identify = Utility.generateGUID();
+                webpageObject.setThumbImage(shareObject.getThumbnail());
+                webpageObject.title = shareObject.getTitle();
+                webpageObject.description = shareObject.getSecondTitle();
+                webpageObject.defaultText = shareObject.getMessage();
+                weiboMessage.mediaObject = webpageObject;
+                break;
             case TYPE_MUSIC:
                 MusicObject musicObject = new MusicObject();
-                musicObject.actionUrl = shareObject.getMessage();
+                musicObject.actionUrl = shareObject.getRedirectUrl();
                 musicObject.identify = Utility.generateGUID();
                 musicObject.title = shareObject.getTitle();
                 musicObject.description = shareObject.getSecondTitle();
@@ -437,7 +457,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
             case TYPE_VIDEO:
 
                 VideoObject videoObject = new VideoObject();
-                videoObject.actionUrl = shareObject.getMessage();
+                videoObject.actionUrl = shareObject.getRedirectUrl();
                 videoObject.identify = Utility.generateGUID();
                 videoObject.title = shareObject.getTitle();
                 videoObject.description = shareObject.getSecondTitle();
@@ -469,8 +489,91 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     }
 
     @Override
-    public boolean validateCheck(IShareObject... shareObject) {
-        return true;
+    public boolean validateCheck(IShareObject... shareObjects) {
+        if (shareObjects == null || shareObjects.length == 0) {
+            logE("数据为NULL或者空");
+            notifyEvent(getString(R.string.share_invalidate_datas));
+            return false;
+        }
+
+        boolean validate = true;
+        for (IShareObject shareObject : shareObjects) {
+            if (shareObject == null) {
+                notifyEvent(getString(R.string.share_invalidate_datas));
+                return false;
+            }
+
+            IShareObject.TYPE type = shareObject.getType();
+            // 1. 初始化微博的分享消息
+            switch (type) {
+                case TYPE_WEBURL:
+                    if(TextUtil.isEmpty(shareObject.getRedirectUrl()) || !URIUtil.isValidHttpUri(shareObject.getRedirectUrl())) {
+                        notifyEvent(getString(R.string.share_webpage_invalidate_url));
+                        validate = false;
+                    } else if (shareObject.getThumbnail() == null) {
+                        notifyEvent(getString(R.string.share_image_empty));
+                        validate = false;
+                    }
+                    break;
+                case TYPE_TEXT:
+                    if (TextUtil.isEmpty(shareObject.getMessage())) {
+                        notifyEvent(getString(R.string.share_text_empty));
+                        validate = false;
+                    } else if (shareObject.getMessage().length() > 140) {
+                        notifyEvent(getString(R.string.share_text_too_long));
+                        validate = false;
+                    }
+                    break;
+                case TYPE_IMAGE:
+                    if (shareObject.getThumbnail() == null) {
+                        notifyEvent(getString(R.string.share_image_empty));
+                        validate = false;
+                    }
+                    break;
+                case TYPE_MUSIC:
+
+                    if (TextUtil.isEmpty(shareObject.getMediaUrl()) && TextUtil.isEmpty(shareObject.getLowBandMediaUrl())) {
+                        notifyEvent(getString(R.string.share_music_invalidate_url));
+                        validate = false;
+                    } else if(!URIUtil.isValidHttpUri(shareObject.getMediaUrl()) && !URIUtil.isValidHttpUri(shareObject.getLowBandMediaUrl())) {
+                        notifyEvent(getString(R.string.share_music_invalidate_url));
+                        validate = false;
+                    } else if(TextUtil.isEmpty(shareObject.getRedirectUrl()) || !URIUtil.isValidHttpUri(shareObject.getRedirectUrl())) {
+                        notifyEvent(getString(R.string.share_music_invalidate_redirect_url));
+                        validate = false;
+                    } else if(shareObject.getContentSize() <= 0) {
+                        notifyEvent(getString(R.string.share_music_invalidate_duration));
+                        validate = false;
+                    } else if(TextUtil.isEmpty(shareObject.getTitle()) || TextUtil.isEmpty(shareObject.getSecondTitle())) {
+                        notifyEvent(getString(R.string.share_music_title_empty));
+                        validate = false;
+                    }
+
+                    break;
+                case TYPE_VIDEO:
+
+                    if (TextUtil.isEmpty(shareObject.getMediaUrl())) {//播放url
+                        notifyEvent(getString(R.string.share_video_invalidate_url));
+                        validate = false;
+                    } else if(!URIUtil.isValidHttpUri(shareObject.getMediaUrl())) {//播放url
+                        notifyEvent(getString(R.string.share_video_invalidate_url));
+                        validate = false;
+                    } else if(TextUtil.isEmpty(shareObject.getRedirectUrl()) || !URIUtil.isValidHttpUri(shareObject.getRedirectUrl())) {//详情url
+                        notifyEvent(getString(R.string.share_video_invalidate_redirect_url));
+                        validate = false;
+                    } else if(shareObject.getContentSize() <= 0) {
+                        notifyEvent(getString(R.string.share_video_invalidate_duration));//时长
+                        validate = false;
+                    } else if(TextUtil.isEmpty(shareObject.getTitle()) || TextUtil.isEmpty(shareObject.getSecondTitle())) {//title
+                        notifyEvent(getString(R.string.share_video_title_empty));
+                        validate = false;
+                    }
+
+                    break;
+            }
+            return validate;
+        }
+        return validate;
     }
 
     /**

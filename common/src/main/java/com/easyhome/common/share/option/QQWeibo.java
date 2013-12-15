@@ -11,6 +11,8 @@ import android.os.Message;
 import com.easyhome.common.R;
 import com.easyhome.common.app.UiThreadHandler;
 import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.utils.TextUtil;
+import com.easyhome.common.utils.URIUtil;
 import com.tencent.mm.sdk.platformtools.Util;
 import com.tencent.open.HttpStatusException;
 import com.tencent.open.NetworkUnavailableException;
@@ -34,6 +36,8 @@ import java.net.SocketTimeoutException;
  */
 public class QQWeibo extends QQConnect {
 
+    public static final int MAX_LENGHT_OF_CONTENT = 280;//最大140个文字，280个字母数字
+
     private String mLastAddTweetId;//最近发成功的微博ID
 
     @Override
@@ -55,31 +59,31 @@ public class QQWeibo extends QQConnect {
             return;
         }
 
-        if (shareObject == null || shareObject.length == 0) {
-            return;
-        }
-
         IShareObject object = shareObject[0];
         if (mTencent.ready(getContext())) {
             Bundle bundle = new Bundle();
             bundle.putString("format", "json");// 返回的数据格式
             switch (object.getType()) {
                 case TYPE_TEXT:
-                    bundle.putString("content", "share a text twitter"); //object.getMessage()
+                    bundle.putString("content", object.getMessage());
                     mTencent.requestAsync(Constants.GRAPH_ADD_T, bundle,
                             Constants.HTTP_POST, new TQQApiListener(getContext(), "add_t", false), null);
                     break;
                 case TYPE_WEBURL:
-                    bundle.putString("content", "http://www.baidu.com"); //object.getMediaUrl()
+                    bundle.putString("content", getWebpageContent(object));
                     mTencent.requestAsync(Constants.GRAPH_ADD_T, bundle,
                             Constants.HTTP_POST, new TQQApiListener(getContext(), "add_t", false), null);
                     break;
                 case TYPE_IMAGE:
+                    bundle.putString("content", getWebpageContent(object));
+                    bundle.putByteArray("pic", Util.bmpToByteArray(object.getThumbnail(), true));
+                    mTencent.requestAsync(Constants.GRAPH_ADD_PIC_T, bundle,
+                            Constants.HTTP_POST,  new TQQApiListener(getContext(), "add_pic_t", false), null);
+                    break;
                 case TYPE_MUSIC:
                 case TYPE_VIDEO:
-                    bundle.putString("content", "share a text and image twitter");
-                    Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), R.drawable.ic_launcher);
-                    bundle.putByteArray("pic", Util.bmpToByteArray(bitmap, true));//object.getThumbnail()
+                    bundle.putString("content", getMediaContent(object));
+                    bundle.putByteArray("pic", Util.bmpToByteArray(object.getThumbnail(), true));
                     mTencent.requestAsync(Constants.GRAPH_ADD_PIC_T, bundle,
                             Constants.HTTP_POST,  new TQQApiListener(getContext(), "add_pic_t", false), null);
                     break;
@@ -87,9 +91,100 @@ public class QQWeibo extends QQConnect {
         }
     }
 
+    private String getMediaContent(IShareObject object) {
+        String url = object.getMediaUrl();
+        if (TextUtil.isEmpty(url)) {
+            url = object.getLowBandMediaUrl();
+        }
+        return object.getMessage() + object.getTitle() + object.getSecondTitle() + url;
+    }
+
+    private String getWebpageContent(IShareObject object) {
+        return object.getMessage() + object.getTitle() + object.getSecondTitle() + object.getRedirectUrl();
+    }
+
     @Override
-    public boolean validateCheck(IShareObject... shareObject) {
-        return false;
+    public boolean validateCheck(IShareObject... shareObjects) {
+        if (shareObjects == null || shareObjects.length == 0) {
+            logE("数据为NULL或者空");
+            notifyEvent(getString(R.string.share_invalidate_datas));
+            return false;
+        }
+
+        for (IShareObject object : shareObjects) {
+            if (object == null) {
+                notifyEvent(getString(R.string.share_invalidate_datas));
+                return false;
+            }
+
+            IShareObject.TYPE type = object.getType();
+
+            switch (type) {
+                case TYPE_TEXT:
+                    if (TextUtil.isEmpty(object.getMessage())) {
+                        notifyEvent(getString(R.string.share_text_empty));
+                        return false;
+                    } else if(object.getMessage().length() > MAX_LENGHT_OF_CONTENT) {
+                        notifyEvent(getString(R.string.share_text_too_long));
+                        return false;
+                    }
+                    break;
+                case TYPE_WEBURL:
+                    if (TextUtil.isEmpty(getMediaContent(object))) {
+                        notifyEvent(getString(R.string.share_text_empty));
+                        return false;
+                    } else if (TextUtil.isEmpty(object.getRedirectUrl()) || !URIUtil.isValidHttpUri(object.getRedirectUrl())) {
+                        notifyEvent(getString(R.string.share_webpage_invalidate_url));
+                        return false;
+                    } else if(object.getThumbnail() == null) {
+                        notifyEvent(getString(R.string.share_image_empty));
+                        return false;
+                    } else if(getWebpageContent(object).length() > MAX_LENGHT_OF_CONTENT) {
+                        notifyEvent(getString(R.string.share_text_too_long));
+                        return false;
+                    }
+                    break;
+                case TYPE_IMAGE:
+                    if (TextUtil.isEmpty(getMediaContent(object))) {
+                        notifyEvent(getString(R.string.share_text_empty));
+                        return false;
+                    } else if (TextUtil.isEmpty(object.getRedirectUrl()) || !URIUtil.isValidHttpUri(object.getRedirectUrl())) {
+                        notifyEvent(getString(R.string.share_webpage_invalidate_url));
+                        return false;
+                    } else if(object.getThumbnail() == null) {
+                        notifyEvent(getString(R.string.share_image_empty));
+                        return false;
+                    } else if(getMediaContent(object).length() > MAX_LENGHT_OF_CONTENT) {
+                        notifyEvent(getString(R.string.share_text_too_long));
+                        return false;
+                    }
+                    break;
+                case TYPE_MUSIC:
+                case TYPE_VIDEO:
+                    if (TextUtil.isEmpty(getMediaContent(object))) {
+                        notifyEvent(getString(R.string.share_text_empty));
+                        return false;
+                    } else if ((TextUtil.isEmpty(object.getMediaUrl()) && TextUtil.isEmpty(object.getLowBandMediaUrl()))
+                            || (!URIUtil.isValidHttpUri(object.getMediaUrl()) && !URIUtil.isValidHttpUri(object.getLowBandMediaUrl()))) {
+                        notifyEvent(getString(R.string.share_music_invalidate_url));
+                        return false;
+                    } else if (TextUtil.isEmpty(object.getTitle()) || TextUtil.isEmpty(object.getSecondTitle())) {
+                        notifyEvent(getString(R.string.share_music_title_empty));
+                        return false;
+                    } else if (TextUtil.isEmpty(object.getRedirectUrl()) || !URIUtil.isValidHttpUri(object.getRedirectUrl())) {
+                        notifyEvent(getString(R.string.share_music_invalidate_redirect_url));
+                        return false;
+                    } else if(object.getThumbnail() == null) {
+                        notifyEvent(getString(R.string.share_image_empty));
+                        return false;
+                    } else if(getMediaContent(object).length() > MAX_LENGHT_OF_CONTENT) {
+                        notifyEvent(getString(R.string.share_text_too_long));
+                        return false;
+                    }
+                    break;
+            }
+        }
+        return true;
     }
 
     @Override

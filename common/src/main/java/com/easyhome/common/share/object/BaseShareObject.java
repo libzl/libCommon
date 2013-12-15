@@ -15,6 +15,9 @@ public abstract class BaseShareObject implements IShareObject{
     private String title = "";
     private String secondTitle = "";
     private String message = "";
+    private Bitmap bitmap = null;
+    private String redirectUrl;
+    private String[] thumbnailUrls;
 
     /**
      * 设置标题
@@ -38,6 +41,17 @@ public abstract class BaseShareObject implements IShareObject{
         this.message = message;
     }
 
+    public void setThumbnail(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public void setRedirectUrl(String redirectUrl) {
+        this.redirectUrl = redirectUrl;
+    }
+
+    public void setThumbnailUrls(String[] thumbnailUrls) {
+        this.thumbnailUrls = thumbnailUrls;
+    }
     /**
      * 获得一个媒体链接：音乐、视频、网址
      *
@@ -95,12 +109,17 @@ public abstract class BaseShareObject implements IShareObject{
      */
     @Override
     public Bitmap getThumbnail() {
-        return null;
+        return bitmap;
     }
 
     @Override
     public String[] getThumbnailUrl() {
-        return null;
+        return thumbnailUrls;
+    }
+
+    @Override
+    public String getRedirectUrl() {
+        return redirectUrl;
     }
 
     /**

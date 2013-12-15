@@ -66,25 +66,31 @@ public class ShareActivity extends ActionBarActivity {
 
         @Override
         public boolean onOptionsItemSelected(MenuItem item) {
-            IShareObject shareObject = prepareShareObject();
             int id = item.getItemId();
+            IShareObject shareObject = null;
             switch (id) {
                 case R.id.action_weiblog:
+                    shareObject = prepareShareObject(ShareManager.OPTION_WEIBLOG);
                     ShareManager.getInstance().share(getActivity(), ShareManager.OPTION_WEIBLOG, shareObject, this);
                     break;
                 case R.id.action_weichat:
+                    shareObject = prepareShareObject(ShareManager.OPTION_WEICHAT);
                     ShareManager.getInstance().share(getActivity(), ShareManager.OPTION_WEICHAT, shareObject, this);
                     break;
                 case R.id.action_weichat_friends:
+                    shareObject = prepareShareObject(ShareManager.OPTION_WEICHAT_FRIENDS);
                     ShareManager.getInstance().share(getActivity(), ShareManager.OPTION_WEICHAT_FRIENDS, shareObject, this);
                     break;
                 case R.id.action_qqzone:
+                    shareObject = prepareShareObject(ShareManager.OPTION_QQZONE);
                     ShareManager.getInstance().share(getActivity(), ShareManager.OPTION_QQZONE, shareObject, this);
                     break;
                 case R.id.action_qqweibo:
+                    shareObject = prepareShareObject(ShareManager.OPTION_QQWEIBO);
                     ShareManager.getInstance().share(getActivity(), ShareManager.OPTION_QQWEIBO, shareObject, this);
                     break;
                 case R.id.action_qqfriends:
+                    shareObject = prepareShareObject(ShareManager.OPTION_QQFIRENTS);
                     ShareManager.getInstance().share(getActivity(), ShareManager.OPTION_QQFIRENTS, shareObject, this);
                     break;
                 default:
@@ -94,30 +100,27 @@ public class ShareActivity extends ActionBarActivity {
         }
 
         /**
-         * TODO 测试数据
+         * 测试数据
+         * @param option
          * @return
          */
-        private IShareObject prepareShareObject() {
+        private IShareObject prepareShareObject(int option) {
             IShareObject shareObject = null;
-            Bitmap bitmap = null;
             switch (mRadioGroup.getCheckedRadioButtonId()) {
                 case R.id.radio_share_txt:
-                    shareObject = new ShareText("大家好吗？");
+                    shareObject = ShareTester.get(getActivity(), option).getShareText();
                     break;
                 case R.id.radio_share_audio:
-                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-                    shareObject = new ShareAudio(bitmap, "trackname", "description", "url", "loadurl", 20);
+                    shareObject = ShareTester.get(getActivity(), option).getShareAudio();
                     break;
                 case R.id.radio_share_image:
-                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-                    shareObject = new ShareImage(bitmap);
+                    shareObject = ShareTester.get(getActivity(), option).getShareImage();
                     break;
                 case R.id.radio_share_video:
-                    bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-                    shareObject = new ShareVideo(bitmap, "mvname", "description", "url", 2000);
+                    shareObject = ShareTester.get(getActivity(), option).getShareVidio();
                     break;
                 case R.id.radio_share_url:
-                    shareObject = new ShareWebpage("http://music.baidu.com");
+                    shareObject = ShareTester.get(getActivity(), option).getShareWebpage();
                     break;
             }
             return shareObject;

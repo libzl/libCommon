@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">公共组件</string>
+
+    <string name="title_section1">分享模块</string>
+    <string name="title_section2">媒体播放模块</string>
+    <string name="title_section3">数据库模块</string>
+    <string name="title_section4">下载模块</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- 分享模块 -->
+
+    <string name="action_login">登录</string>
+    <string name="action_weiblog">微博</string>
+    <string name="action_weichat">微信</string>
+    <string name="action_weichat_friends">微信朋友圈</string>
+    <string name="action_qqzone">QQ空间</string>
+    <string name="action_qqfriends">QQ好友</string>
+    <string name="action_qqweibo">QQ微博</string>
+    <string name="action_settings">设置</string>
+    <string name="share_errcode_unknown">分享出现未知错误</string>
+    <string name="share_errcode_auth_deny">授权失败</string>
+    <string name="share_errcode_cancel_auth">取消授权</string>
+    <string name="share_errcode_cancel">分享被取消</string>
+    <string name="share_errcode_success">分享成功</string>
+    <string name="share_errcode_fail">分享失败</string>
+    <string name="share_errcode_uninstalled">未安装%1$s软件</string>
+    <string name="share_errcode_unsupport">分享不支持</string>
+    <string name="share_errcode_auth_cancel">授权过程被取消</string>
+    <string name="share_errcode_auth_fail_code">获得CODE失败</string>
+    <string name="share_errcode_auth_success">授权成功</string>
+    <string name="share_cancel_download_weibo">取消下载微博</string>
+    <string name="share_errcode_login_fail">登录失败</string>
+    <string name="share_errcode_login_cancel">登录过程取消</string>
+    <string name="share_errcode_net_timeout">网络连接超时</string>
+    <string name="share_text_empty">文本内容为空</string>
+    <string name="share_music_invalidate_url">音频试听链接为空</string>
+    <string name="share_video_invalidate_url">视频播放链接为空</string>
+    <string name="share_image_empty">图片数据为空</string>
+    <string name="share_image_unsupport_online">只支持本地图片分享</string>
+    <string name="share_webpage_invalidate_url">网址为空或者无效</string>
+    <string name="share_invalidate_datas">分享数据无效</string>
+
+
+</resources>

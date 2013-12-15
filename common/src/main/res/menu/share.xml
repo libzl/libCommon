@@ -1,0 +1,33 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.baidu.music.sharesdk.ShareActivity" >
+    
+    <item android:id="@+id/action_weiblog"
+        android:title="@string/action_weiblog"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_weichat"
+        android:title="@string/action_weichat"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_weichat_friends"
+        android:title="@string/action_weichat_friends"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_qqzone"
+        android:title="@string/action_qqzone"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_qqfriends"
+        android:title="@string/action_qqfriends"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_qqweibo"
+        android:title="@string/action_qqweibo"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+</menu>

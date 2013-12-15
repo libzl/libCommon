@@ -49,12 +49,13 @@ import java.io.IOException;
  */
 public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeiboHandler.Request {
 
+    public static final int MAX_LENGHT_OF_CONTENT = 140;//最大140个文字，280个字母数字
     /**
      * 获取 Token 成功或失败的消息
      */
     private static final int MSG_FETCH_TOKEN_SUCCESS = 1;
-    private static final int MSG_FETCH_TOKEN_FAILED = 2;
 
+    private static final int MSG_FETCH_TOKEN_FAILED = 2;
     private static final String TAG = WeiBlog.class.getSimpleName();
 
     private WeiboAuth mWeiboAuth;
@@ -519,7 +520,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     if (TextUtil.isEmpty(shareObject.getMessage())) {
                         notifyEvent(getString(R.string.share_text_empty));
                         validate = false;
-                    } else if (shareObject.getMessage().length() > 140) {
+                    } else if (TextUtil.length(shareObject.getMessage()) > MAX_LENGHT_OF_CONTENT) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         validate = false;
                     }

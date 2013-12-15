@@ -36,7 +36,7 @@ import java.net.SocketTimeoutException;
  */
 public class QQWeibo extends QQConnect {
 
-    public static final int MAX_LENGHT_OF_CONTENT = 280;//最大140个文字，280个字母数字
+    public static final int MAX_LENGHT_OF_CONTENT = 140;//最大140个文字，280个字母数字
 
     private String mLastAddTweetId;//最近发成功的微博ID
 
@@ -124,7 +124,7 @@ public class QQWeibo extends QQConnect {
                     if (TextUtil.isEmpty(object.getMessage())) {
                         notifyEvent(getString(R.string.share_text_empty));
                         return false;
-                    } else if(object.getMessage().length() > MAX_LENGHT_OF_CONTENT) {
+                    } else if(TextUtil.length(object.getMessage()) > MAX_LENGHT_OF_CONTENT) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -139,7 +139,7 @@ public class QQWeibo extends QQConnect {
                     } else if(object.getThumbnail() == null) {
                         notifyEvent(getString(R.string.share_image_empty));
                         return false;
-                    } else if(getWebpageContent(object).length() > MAX_LENGHT_OF_CONTENT) {
+                    } else if(TextUtil.length(getWebpageContent(object)) > MAX_LENGHT_OF_CONTENT) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -154,7 +154,7 @@ public class QQWeibo extends QQConnect {
                     } else if(object.getThumbnail() == null) {
                         notifyEvent(getString(R.string.share_image_empty));
                         return false;
-                    } else if(getMediaContent(object).length() > MAX_LENGHT_OF_CONTENT) {
+                    } else if(TextUtil.length(getMediaContent(object)) > MAX_LENGHT_OF_CONTENT) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -177,7 +177,7 @@ public class QQWeibo extends QQConnect {
                     } else if(object.getThumbnail() == null) {
                         notifyEvent(getString(R.string.share_image_empty));
                         return false;
-                    } else if(getMediaContent(object).length() > MAX_LENGHT_OF_CONTENT) {
+                    } else if(TextUtil.length(getMediaContent(object)) > MAX_LENGHT_OF_CONTENT) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }

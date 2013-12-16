@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
@@ -22,12 +22,12 @@ public class QQFriends extends QQConnect {
 
     @Override
     public int getIcon() {
-        return R.drawable.bt_share_qq;
+        return ShareConfiguration.QQCONNECT.QQ_ICON_ID;
     }
 
     @Override
     public String getName() {
-        return getString(R.string.action_qqfriends);
+        return getString(ShareConfiguration.QQCONNECT.QQ_NAME_ID);
     }
 
     @Override

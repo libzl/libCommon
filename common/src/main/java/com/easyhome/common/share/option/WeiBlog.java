@@ -10,7 +10,7 @@ import android.os.Message;
 import android.widget.Toast;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
 import com.easyhome.common.share.net.AsyncWeiboRunner;
 import com.easyhome.common.share.net.RequestListener;
@@ -118,7 +118,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
      */
     @Override
     public int getIcon() {
-        return R.drawable.bt_share_sinaweibo;
+        return ShareConfiguration.WEIBLOG.ICON_ID;
     }
 
     /**
@@ -128,7 +128,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
      */
     @Override
     public String getName() {
-        return getString(R.string.action_weiblog);
+        return getString(ShareConfiguration.WEIBLOG.NAME_ID);
     }
 
     /**

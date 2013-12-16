@@ -6,8 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.IShareObject;
-import com.easyhome.common.share.IShareOption;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 
 

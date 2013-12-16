@@ -21,6 +21,7 @@
     <string name="action_qqfriends">QQ好友</string>
     <string name="action_qqweibo">QQ微博</string>
     <string name="action_settings">设置</string>
+
     <string name="share_errcode_unknown">分享出现未知错误</string>
     <string name="share_errcode_auth_deny">授权失败</string>
     <string name="share_errcode_cancel_auth">取消授权</string>

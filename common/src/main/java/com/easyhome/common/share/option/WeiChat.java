@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
@@ -96,7 +96,8 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
      */
     @Override
     public int getIcon() {
-        return mTimeline ? R.drawable.bt_share_circleoffriends : R.drawable.bt_share_wechat;
+        return mTimeline ? ShareConfiguration.WEICHAT.WEIXIN_FREINDS_ICON_ID
+                : ShareConfiguration.WEICHAT.WEIXIN_ICON_ID;
     }
 
     /**
@@ -106,7 +107,8 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
      */
     @Override
     public String getName() {
-        return mTimeline ?getString(R.string.action_weichat_friends) : getString(R.string.action_weichat);
+        return mTimeline ?getString(ShareConfiguration.WEICHAT.WEIXIN_FREINDS_NAME_ID)
+                : getString(ShareConfiguration.WEICHAT.WEIXIN_NAME_ID);
     }
 
     /**

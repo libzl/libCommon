@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.easyhome.common.R;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.object.ShareAudio;
 import com.easyhome.common.share.object.ShareImage;
 import com.easyhome.common.share.object.ShareText;

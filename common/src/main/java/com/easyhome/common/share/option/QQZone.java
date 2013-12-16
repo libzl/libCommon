@@ -4,7 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.tencent.tauth.Tencent;
@@ -18,12 +19,12 @@ public class QQZone extends QQConnect {
 
     @Override
     public int getIcon() {
-        return R.drawable.bt_share_qqzone;
+        return ShareConfiguration.QQCONNECT.QQZONE_ICON_ID;
     }
 
     @Override
     public String getName() {
-        return getString(R.string.action_qqzone);
+        return getString(ShareConfiguration.QQCONNECT.QQZONE_NAME_ID);
     }
 
     @Override

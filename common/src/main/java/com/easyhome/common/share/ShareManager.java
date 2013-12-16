@@ -3,10 +3,13 @@ package com.easyhome.common.share;
 import android.content.Context;
 import android.content.Intent;
 
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.option.BaseOption;
+import com.easyhome.common.share.option.IShareOption;
 import com.easyhome.common.share.option.QQFriends;
 import com.easyhome.common.share.option.QQWeibo;
 import com.easyhome.common.share.option.QQZone;
+import com.easyhome.common.share.option.RenRen;
 import com.easyhome.common.share.option.WeiBlog;
 import com.easyhome.common.share.option.WeiChat;
 
@@ -24,6 +27,7 @@ public class ShareManager {
     public static final int OPTION_QQZONE = 3; /*QQ空间*/
     public static final int OPTION_QQFIRENTS = 4; /*QQ好友*/
     public static final int OPTION_QQWEIBO = 5; /*QQ微博*/
+    public static final int OPTION_RENREN = 6; /*人人网*/
 
     private static ShareManager INSTANCE;
     private ShareCreator mShareCreator;
@@ -126,6 +130,16 @@ public class ShareManager {
         }
     }
 
+    public void initOptions(Context context) {
+        mShareCreator.createShareOption(context, OPTION_WEIBLOG);
+        mShareCreator.createShareOption(context, OPTION_WEICHAT);
+        mShareCreator.createShareOption(context, OPTION_WEICHAT_FRIENDS);
+        mShareCreator.createShareOption(context, OPTION_QQZONE);
+        mShareCreator.createShareOption(context, OPTION_QQFIRENTS);
+        mShareCreator.createShareOption(context, OPTION_QQWEIBO);
+        mShareCreator.createShareOption(context, OPTION_RENREN);
+    }
+
     /**
      * 分享项工厂
      */
@@ -135,18 +149,27 @@ public class ShareManager {
             BaseOption shareOption = mCreatedOptions.get(option);
             switch (option) {
                 case OPTION_WEIBLOG:
+                    if (!ShareConfiguration.ENABLE_WEIBLOG) {
+                        return null;
+                    }
                     if (shareOption == null) {
                         shareOption = new WeiBlog(context, null);
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;
                 case OPTION_WEICHAT:
+                    if (!ShareConfiguration.ENABLE_WEICHAT) {
+                        return null;
+                    }
                     if (shareOption == null) {
                         shareOption = new WeiChat(context, null);
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;
                 case OPTION_WEICHAT_FRIENDS:
+                    if (!ShareConfiguration.ENABLE_WEICHAT) {
+                        return null;
+                    }
                     if (shareOption == null) {
                         shareOption = new WeiChat(context, null);
                         mCreatedOptions.put(option, shareOption);
@@ -154,20 +177,38 @@ public class ShareManager {
                     ((WeiChat) shareOption).setEnableTimeline(ShareConfiguration.ENABLE_WEICHAT_SHARE_FIRENDS);
                     break;
                 case OPTION_QQZONE:
+                    if (!ShareConfiguration.ENABLE_QQZONE) {
+                        return null;
+                    }
                     if (shareOption == null) {
                         shareOption = new QQZone();
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;
                 case OPTION_QQFIRENTS:
+                    if (!ShareConfiguration.ENABLE_QQFRIENDS) {
+                        return null;
+                    }
                     if (shareOption == null) {
                         shareOption = new QQFriends();
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;
                 case OPTION_QQWEIBO:
+                    if (!ShareConfiguration.ENABLE_QQWEIBO) {
+                        return null;
+                    }
                     if (shareOption == null) {
                         shareOption = new QQWeibo();
+                        mCreatedOptions.put(option, shareOption);
+                    }
+                    break;
+                case OPTION_RENREN:
+                    if (!ShareConfiguration.ENABLE_RENREN) {
+                        return null;
+                    }
+                    if (shareOption == null) {
+                        shareOption = new RenRen();
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;

@@ -2,8 +2,6 @@ package com.easyhome.common.share.object;
 
 import android.graphics.Bitmap;
 
-import com.easyhome.common.share.IShareObject;
-
 /**
  * 数据源基类
  *

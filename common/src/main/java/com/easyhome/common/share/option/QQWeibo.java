@@ -3,14 +3,12 @@ package com.easyhome.common.share.option;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Message;
 
 import com.easyhome.common.R;
 import com.easyhome.common.app.UiThreadHandler;
-import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.tencent.mm.sdk.platformtools.Util;
@@ -18,7 +16,6 @@ import com.tencent.open.HttpStatusException;
 import com.tencent.open.NetworkUnavailableException;
 import com.tencent.tauth.Constants;
 import com.tencent.tauth.IRequestListener;
-import com.tencent.tauth.Tencent;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
@@ -42,12 +39,12 @@ public class QQWeibo extends QQConnect {
 
     @Override
     public int getIcon() {
-        return R.drawable.bt_share_qqweibo;
+        return ShareConfiguration.QQCONNECT.QQWEIBO_ICON_ID;
     }
 
     @Override
     public String getName() {
-        return getString(R.string.action_qqweibo);
+        return getString(ShareConfiguration.QQCONNECT.QQWEIBO_NAME_ID);
     }
 
     @Override

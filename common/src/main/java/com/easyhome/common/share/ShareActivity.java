@@ -1,8 +1,6 @@
 package com.easyhome.common.share;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
@@ -16,11 +14,8 @@ import android.widget.Toast;
 
 import com.easyhome.common.R;
 import com.easyhome.common.app.BaseFragment;
-import com.easyhome.common.share.object.ShareAudio;
-import com.easyhome.common.share.object.ShareImage;
-import com.easyhome.common.share.object.ShareText;
-import com.easyhome.common.share.object.ShareVideo;
-import com.easyhome.common.share.object.ShareWebpage;
+import com.easyhome.common.share.object.IShareObject;
+import com.easyhome.common.share.option.IShareOption;
 import com.easyhome.common.utils.TextUtil;
 
 /**
@@ -33,11 +28,28 @@ public class ShareActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share);
 
+        ShareManager.getInstance().initOptions(this);
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, new ShareFragment())
                     .commit();
+        } else {
+            ShareManager.getInstance().onHandleNewIntent(this, getIntent());
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ShareManager.getInstance().onHandleActivityResult(this, requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        ShareManager.getInstance().onHandleNewIntent(this, intent);
     }
 
     /**

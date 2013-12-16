@@ -3,7 +3,7 @@ package com.easyhome.common.share.option;
 import android.content.Context;
 import android.content.Intent;
 
-import com.easyhome.common.share.IShareObject;
+import com.easyhome.common.share.object.IShareObject;
 
 /**
  * 人人网

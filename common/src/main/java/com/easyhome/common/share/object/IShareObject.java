@@ -1,4 +1,4 @@
-package com.easyhome.common.share;
+package com.easyhome.common.share.object;
 
 import android.graphics.Bitmap;
 

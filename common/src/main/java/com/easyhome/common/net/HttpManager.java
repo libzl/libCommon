@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.easyhome.common.share.net;
+package com.easyhome.common.net;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;

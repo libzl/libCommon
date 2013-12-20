@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.baidu.music.sharesdk.ShareActivity" >
+    
+    <item android:id="@+id/action_bind"
+        android:title="@string/action_bind"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+    <item android:id="@+id/action_unbind"
+        android:title="@string/action_unbind"
+        android:orderInCategory="100"
+        android:showAsAction="never" />
+</menu>

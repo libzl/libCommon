@@ -12,8 +12,8 @@ import android.widget.Toast;
 import com.easyhome.common.R;
 import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
-import com.easyhome.common.share.net.AsyncWeiboRunner;
-import com.easyhome.common.share.net.RequestListener;
+import com.easyhome.common.net.AsyncWeiboRunner;
+import com.easyhome.common.net.RequestListener;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.sina.weibo.sdk.api.ImageObject;
@@ -578,7 +578,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     }
 
     /**
-     * 该 Handler 配合 {@link com.easyhome.common.share.net.RequestListener} 对应的回调来更新 UI。
+     * 该 Handler 配合 {@link com.easyhome.common.net.RequestListener} 对应的回调来更新 UI。
      */
     private Handler mHandler = new Handler() {
         public void handleMessage(Message msg) {

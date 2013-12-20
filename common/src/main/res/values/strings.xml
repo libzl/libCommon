@@ -7,10 +7,13 @@
     <string name="title_section2">媒体播放模块</string>
     <string name="title_section3">数据库模块</string>
     <string name="title_section4">下载模块</string>
+    <string name="title_section5">插件模块</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="action_bind">绑定</string>
+    <string name="action_unbind">解绑</string>
     <!-- 分享模块 -->
 
     <string name="action_login">登录</string>

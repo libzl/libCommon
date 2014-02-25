@@ -10,7 +10,7 @@ import android.view.Menu;
 import com.easyhome.common.app.BaseActionBarActivity;
 import com.easyhome.common.app.BaseFragment;
 import com.easyhome.common.app.IFragment;
-import com.easyhome.common.share.ShareManager;
+import com.easyhome.common.share.logic.ShareManager;
 
 public class NavigationActivity extends BaseActionBarActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {

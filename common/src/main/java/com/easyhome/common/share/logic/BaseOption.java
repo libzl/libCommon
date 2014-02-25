@@ -1,4 +1,4 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,8 +6,13 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.object.IShareObject;
+import com.easyhome.common.async.UiThreadHandler;
+import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.model.IShareObject;
+import com.easyhome.common.utils.EnvironmentUtilities;
+import com.easyhome.common.utils.FileUtil;
 import com.easyhome.common.utils.TextUtil;
+import com.easyhome.common.utils.ToastUtils;
 
 
 /**
@@ -40,7 +45,8 @@ public abstract class BaseOption implements IShareOption {
 
     private String mCurrentAction;//当前执行的功能
 
-    public BaseOption(){
+    public BaseOption(Context context){
+        mContext = context;
     }
 
     public BaseOption(Context context, IShareObject shareObject) {
@@ -56,6 +62,10 @@ public abstract class BaseOption implements IShareOption {
         mShareObject = object;
     }
 
+	public IShareObject getShareObject() {
+		return mShareObject;
+	}
+
     protected Context getContext() {
         return mContext;
     }
@@ -63,7 +73,13 @@ public abstract class BaseOption implements IShareOption {
     protected String getString(int resId) {
         return mContext.getString(resId);
     }
-    @Override
+
+	@Override
+	public boolean isNeedUpdate() {
+		return false;
+	}
+
+	@Override
     public void setShareListener(IShareListener shareListener) {
         mShareListener = shareListener;
     }
@@ -75,6 +91,13 @@ public abstract class BaseOption implements IShareOption {
     public void setCurrentAction(String action) {
         mCurrentAction = action;
     }
+
+    @Override
+    public int getMaxLength(IShareObject shareObject) {
+        return Integer.MAX_VALUE;
+    }
+
+	public abstract String getAppName();
 
     /**
      * 设置授权结果
@@ -111,7 +134,7 @@ public abstract class BaseOption implements IShareOption {
      */
     protected final void performCancelAuth(boolean success) {
         //发送通知创建api结果
-        notifyEvent(mContext, createCancelAuthIntent(success, getString(R.string.share_errcode_cancel_auth)));
+        notifyEvent(mContext, createCancelAuthIntent(success, getString(R.string.share_status_cancel_auth)));
     }
 
     /**
@@ -176,70 +199,119 @@ public abstract class BaseOption implements IShareOption {
         return intent;
     }
 
-    private void notifyEvent(Context context, Intent intent) {
+    private void notifyEvent(final Context context, Intent intent) {
         onEvent(context, intent);
-        if (mShareListener != null && intent != null) {
-            boolean success = intent.getBooleanExtra(EXTREA_RESULT, false);
-            String message = intent.getStringExtra(EXTREA_MESSAGE);
-            mShareListener.onResponceShare(success, message);
-        }
+
+		String message = dipatchShareListener(intent);
+		notifyEvent(message);
     }
 
-    public void notifyEvent(String message) {
-        if (!TextUtil.isEmpty(message)) {
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-        }
-    }
+	public String dipatchShareListener(Intent intent) {
+		boolean success = intent.getBooleanExtra(EXTREA_RESULT, false);
+		String message = intent.getStringExtra(EXTREA_MESSAGE);
+		if (mShareListener != null && intent != null ) {
+			if (ACTION_SHARE.equals(intent.getAction())) {
+				mShareListener.onResponceShare(this, success, message);
+			} else if (ACTION_AUTH.equals(intent.getAction())) {
+				mShareListener.onResponceAuth(this, success, message);
+			}
+		}
+		return message;
+	}
+
+	public void notifyEvent(final String message) {
+
+		if (ShareConfiguration.ENABLE_SHOW_NOTIFY) {
+			UiThreadHandler.post(new Runnable() {
+				@Override
+				public void run() {
+					if (!TextUtil.isEmpty(message)) {
+						Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+					}
+				}
+			});
+		}
+
+	}
+
+	/**
+	 * 检查是否支持
+	 * @return
+	 */
+	public boolean checkSupport() {
+		boolean created = onCreate();
+		String message = "";
+		if (isSupportSSO() || isSupportWeb()) {
+			performCreate(created, message);
+			return true;
+		} else {
+			if (isInstalledApp()) {
+				if (isNeedUpdate()) {
+					message = mContext.getString(R.string.share_errcode_need_update, getAppName());
+				} else {
+					message = mContext.getString(R.string.share_errcode_unsupport);
+				}
+			} else {
+				message = mContext.getString(R.string.share_errcode_uninstalled, getAppName());
+			}
+			performCreate(created, message);
+		}
+		return false;
+	}
 
     /**
      * 执行分享过程
      */
     public final void doShare() {
         mCurrentAction = ACTION_SHARE;
-        //0.检查是否获得api
-        boolean created = onCreate();
-        String message = "";
-        if (isSupportSSO() || isSupportWeb()) {
-            performCreate(created, message);
-            if (created) {
-                //1.检查有效数据
-                if (validateCheck(mShareObject)){
-                    //2.发送数据
-                    onShare(mShareObject);
-                }
-            }
-        } else {
-            if (isInstalledApp()) {
-                message = mContext.getString(R.string.share_errcode_unsupport);
-            } else {
-                message = mContext.getString(R.string.share_errcode_uninstalled, getName());
-            }
-            performCreate(created, message);
+		//0.检查是否获得api
+        if (checkSupport()) {
+			//1.检查有效数据
+			if (validateCheckSdcard(mShareObject) && validateCheck(mShareObject)){
+				//2.发送数据
+				onShare(mShareObject);
+			}
         }
     }
 
-    /**
+	/**
+	 * 当分享带有图片的内容时候，检查当前sdcard的状态是否满足要求
+	 * @param shareObject
+	 * @return
+	 */
+	private boolean validateCheckSdcard(IShareObject shareObject) {
+		switch (shareObject.getType()) {
+			case TYPE_IMAGE:
+			case TYPE_VIDEO:
+			case TYPE_MUSIC:
+
+				if (!EnvironmentUtilities.isSdcardMounted()
+						|| !EnvironmentUtilities.isSdcardWritable()
+						|| !EnvironmentUtilities.isSdcardExist()) {
+					ToastUtils.showShortToast(getContext(), R.string.share_errcode_sdcard_badly);
+					return false;
+				}
+
+				if (!FileUtil.checkSDCardHasEnoughSpace(FileUtil.ONE_MB)) {
+					ToastUtils.showShortToast(getContext(), R.string.share_errcode_sdcard_no_space);
+					return false;
+				}
+
+				break;
+		}
+		return true;
+	}
+
+	/**
      * 执行授权过程
      */
     public final void doAuth() {
         mCurrentAction = ACTION_AUTH;
-        //0.检查是否获得api
-        boolean created = onCreate();
-        String message = "";
-        if (isSupportSSO() || isSupportWeb()) {
-            performCreate(created, message);
-            if (created) {
-                //1.授权
-                onAuth();
-            }
-        } else {
-            if (isInstalledApp()) {
-                message = mContext.getString(R.string.share_errcode_unsupport);
-            } else {
-                message = mContext.getString(R.string.share_errcode_uninstalled, getName());
-            }
-            performCreate(created, message);
-        }
+		//0.检查是否获得api
+		if (checkSupport()) {
+			//1.授权
+			onAuth();
+		}
     }
 
     /**
@@ -247,23 +319,11 @@ public abstract class BaseOption implements IShareOption {
      */
     public final void doLogin() {
         mCurrentAction = ACTION_LOGIN;
-        //0.检查是否获得api
-        boolean created = onCreate();
-        String message = "";
-        if (isSupportSSO() || isSupportWeb()) {
-            performCreate(created, message);
-            if (created) {
-                //1.登录
-                onLogin();
-            }
-        } else {
-            if (isInstalledApp()) {
-                message = mContext.getString(R.string.share_errcode_unsupport);
-            } else {
-                message = mContext.getString(R.string.share_errcode_uninstalled, getName());
-            }
-            performCreate(created, message);
-        }
+		//0.检查是否获得api
+		if (checkSupport()) {
+			//1.登录
+			onLogin();
+		}
     }
 
     /**
@@ -272,22 +332,10 @@ public abstract class BaseOption implements IShareOption {
     public final void doLogout() {
         mCurrentAction = ACTION_LOGOUT;
         //0.检查是否获得api
-        boolean created = onCreate();
-        String message = "";
-        if (isSupportSSO() || isSupportWeb()) {
-            performCreate(created, message);
-            if (created) {
-                //1.登出
-                onLogout();
-            }
-        } else {
-            if (isInstalledApp()) {
-                message = mContext.getString(R.string.share_errcode_unsupport);
-            } else {
-                message = mContext.getString(R.string.share_errcode_uninstalled, getName());
-            }
-            performCreate(created, message);
-        }
+		if (checkSupport()) {
+			//1.登出
+			onLogout();
+		}
     }
 
     /**

@@ -29,6 +29,7 @@ android {
         release {
             runProguard false
             proguardFile getDefaultProguardFile('proguard-android.txt')
+            debuggable false
         }
     }
     productFlavors {
@@ -40,9 +41,10 @@ android {
 
 dependencies {
     compile files('libs/libammsdk.jar')
-    compile 'com.android.support:appcompat-v7:18.0.0'
-    compile 'com.android.support:gridlayout-v7:18.0.0'
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.google.code.gson:gson:2.2.+'
+    compile 'com.android.support:appcompat-v7:+'
+    compile 'com.android.support:gridlayout-v7:+'
+    compile 'com.android.support:support-v4:+'
     compile files('libs/weibosdkcore.jar')
     compile files('libs/open_sdk.jar')
     compile files('libs/mta-sdk-1.0.0.jar')

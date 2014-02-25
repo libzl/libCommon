@@ -16,12 +16,12 @@
 
 package com.easyhome.common.net;
 
-import java.io.ByteArrayOutputStream;
-
 import android.content.Context;
 
 import com.sina.weibo.sdk.auth.WeiboParameters;
 import com.sina.weibo.sdk.exception.WeiboException;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * 异步回调框架类。
@@ -43,9 +43,9 @@ public class AsyncWeiboRunner {
      * @param listener   回调对象
      */
     public static void request(
-            final String url, 
-            final WeiboParameters params, 
-            final String httpMethod, 
+            final String url,
+            final WeiboParameters params,
+            final String httpMethod,
             final RequestListener listener) {
         
         new Thread() {
@@ -79,10 +79,10 @@ public class AsyncWeiboRunner {
      * @param listener   回调对象
      */
     public static void request4Binary(
-            final Context context, 
+            final Context context,
             final String url,
-            final WeiboParameters params, 
-            final String httpMethod, 
+            final WeiboParameters params,
+            final String httpMethod,
             final RequestListener listener) {
         
         new Thread() {
@@ -102,4 +102,40 @@ public class AsyncWeiboRunner {
             }
         }.start();
     }
+
+	/**
+	 * 根据 URL 异步请求数据，并在获取到数据后通过 {@link RequestListener}
+	 * 接口进行回调。请注意：该回调函数是运行在后台线程的。
+	 * 另外，在调用该方法时，成功时，会调用 {@link RequestListener#onComplete4binary}，
+	 * {@link RequestListener#onComplete} 并不会被回调，请区分 {@link #request}。
+	 *
+	 * @param url        服务器地址
+	 * @param params     存放参数的容器
+	 * @param fileContent 存放文件数据
+	 * @param httpMethod "GET" or "POST"
+	 * @param listener   回调对象
+	 */
+	public static void request4Byte(
+			final String url,
+			final WeiboParameters params,
+			final byte[] fileContent,
+			final String httpMethod,
+			final RequestListener listener) {
+
+		new Thread() {
+			@Override
+			public void run() {
+				try {
+					String resp = HttpManager.openUrl4Byte(url, httpMethod, params, fileContent);
+					if (listener != null) {
+						listener.onComplete(resp);
+					}
+				} catch (WeiboException e) {
+					if (listener != null) {
+						listener.onError(e);
+					}
+				}
+			}
+		}.start();
+	}
 }

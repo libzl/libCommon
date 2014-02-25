@@ -1,19 +1,21 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.widget.Toast;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.object.IShareObject;
-import com.easyhome.common.share.ShareConfiguration;
 import com.easyhome.common.net.AsyncWeiboRunner;
 import com.easyhome.common.net.RequestListener;
+import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.model.IShareObject;
+import com.easyhome.common.share.ui.SinaAuthDialog;
+import com.easyhome.common.utils.BitmapUtil;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.sina.weibo.sdk.api.ImageObject;
@@ -23,22 +25,20 @@ import com.sina.weibo.sdk.api.VideoObject;
 import com.sina.weibo.sdk.api.WebpageObject;
 import com.sina.weibo.sdk.api.WeiboMessage;
 import com.sina.weibo.sdk.api.WeiboMultiMessage;
-import com.sina.weibo.sdk.api.share.BaseRequest;
 import com.sina.weibo.sdk.api.share.BaseResponse;
 import com.sina.weibo.sdk.api.share.IWeiboDownloadListener;
 import com.sina.weibo.sdk.api.share.IWeiboHandler;
 import com.sina.weibo.sdk.api.share.IWeiboShareAPI;
 import com.sina.weibo.sdk.api.share.SendMessageToWeiboRequest;
+import com.sina.weibo.sdk.api.share.SendMessageToWeiboResponse;
 import com.sina.weibo.sdk.api.share.SendMultiMessageToWeiboRequest;
 import com.sina.weibo.sdk.api.share.WeiboShareSDK;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 import com.sina.weibo.sdk.auth.WeiboAuth;
 import com.sina.weibo.sdk.auth.WeiboAuthListener;
 import com.sina.weibo.sdk.auth.WeiboParameters;
-import com.sina.weibo.sdk.auth.sso.SsoHandler;
 import com.sina.weibo.sdk.constant.WBConstants;
 import com.sina.weibo.sdk.exception.WeiboException;
-import com.sina.weibo.sdk.utils.LogUtil;
 import com.sina.weibo.sdk.utils.Utility;
 
 import java.io.ByteArrayOutputStream;
@@ -47,30 +47,38 @@ import java.io.IOException;
 /**
  * 新浪微博
  */
-public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeiboHandler.Request {
+public class WeiBlog extends BaseOption implements IWeiboHandler.Response {
+
+    private static final String REQ_ATION = "com.sina.weibo.sdk.action.ACTION_SDK_REQ_ACTIVITY";
 
     public static final int MAX_LENGHT_OF_CONTENT = 140;//最大140个文字，280个字母数字
-    /**
-     * 获取 Token 成功或失败的消息
-     */
-    private static final int MSG_FETCH_TOKEN_SUCCESS = 1;
-
-    private static final int MSG_FETCH_TOKEN_FAILED = 2;
     private static final String TAG = WeiBlog.class.getSimpleName();
 
-    private WeiboAuth mWeiboAuth;
-    private Oauth2AccessToken mAccessToken;
-    private SsoHandler mSsoHandler;
     private IWeiboShareAPI mWeiboShareAPI;
+	/** 微博 Web 授权类，提供登陆等功能  */
+	private WeiboAuth mWeiboAuth;
+	/** 封装了 "access_token"，"expires_in"，"refresh_token"，并提供了他们的管理功能  */
+	private Oauth2AccessToken mAccessToken;
 
-    public WeiBlog() {
+    public WeiBlog(Context context) {
+        super(context);
     }
 
     public WeiBlog(Context context, IShareObject shareObject) {
         super(context, shareObject);
     }
 
-    /**
+    @Override
+    public int getMaxLength(IShareObject shareObject) {
+        return MAX_LENGHT_OF_CONTENT;
+    }
+
+	@Override
+	public String getAppName() {
+		return getString(ShareConfiguration.WEIBLOG.APP_NAME_ID);
+	}
+
+	/**
      * 获得APPID
      *
      * @return
@@ -108,7 +116,21 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
      */
     @Override
     public boolean isInstalledApp() {
-        return mWeiboShareAPI != null && mWeiboShareAPI.isWeiboAppInstalled();
+		PackageManager pm = getContext().getPackageManager();
+		boolean isInstalled = mWeiboShareAPI != null && mWeiboShareAPI.isWeiboAppInstalled();
+		try {
+			String qqPackageName = "com.sina.weibo";
+			PackageInfo pi = pm.getPackageInfo(qqPackageName, PackageManager.GET_ACTIVITIES);
+			int enableFlag = pm.getApplicationEnabledSetting(qqPackageName);
+			if (pi != null && enableFlag == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+					|| enableFlag == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
+				isInstalled = true;
+			}
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+			isInstalled = false;
+		}
+		return isInstalled;
     }
 
     /**
@@ -138,18 +160,22 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
      */
     @Override
     public boolean onCreate() {
-        mAccessToken = AccessTokenKeeper.readAccessToken(getContext());
         // 创建微博 SDK 接口实例
-        mWeiboShareAPI = WeiboShareSDK.createWeiboAPI(getContext(), ShareConfiguration.WEIBLOG.APPID);
+        mWeiboShareAPI = WeiboShareSDK.createWeiboAPI(getContext(), ShareConfiguration.WEIBLOG.APPID, false);
 
-        // 如果未安装微博客户端，设置下载微博对应的回调
+		mAccessToken = AccessTokenKeeper.readAccessToken(getContext());
+
+		mWeiboAuth = new WeiboAuth(getContext(), ShareConfiguration.WEIBLOG.APPID,
+				ShareConfiguration.WEIBLOG.REDIRECT_URL, ShareConfiguration.WEIBLOG.SCOPE);
+
+		// 如果未安装微博客户端，设置下载微博对应的回调
         if (!mWeiboShareAPI.isWeiboAppInstalled()) {
             mWeiboShareAPI.registerWeiboDownloadListener(new IWeiboDownloadListener() {
                 @Override
                 public void onCancel() {
                     Toast.makeText(getContext(),
-                            R.string.share_cancel_download_weibo,
-                            Toast.LENGTH_SHORT).show();
+							R.string.share_status_cancel_download_weibo,
+							Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -161,81 +187,44 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
      */
     @Override
     public void onAuth() {
+		WeiboParameters requestParams = new WeiboParameters();
+		requestParams.add(WBConstants.AUTH_PARAMS_CLIENT_ID,     ShareConfiguration.WEIBLOG.APPID);
+		requestParams.add(WBConstants.AUTH_PARAMS_RESPONSE_TYPE, "token");
+		requestParams.add(WBConstants.AUTH_PARAMS_SCOPE, "");
+		requestParams.add(WBConstants.AUTH_PARAMS_DISPLAY, "mobile");
+		requestParams.add(WBConstants.AUTH_PARAMS_REDIRECT_URL,  ShareConfiguration.WEIBLOG.REDIRECT_URL);
+		String url = ShareConfiguration.WEIBLOG.OAUTH2_CODE_URL + "?" + Utility.encodeUrl(requestParams);
 
-        if (mAccessToken.isSessionValid()) {
-            performAuth(true, "");
-            return;
-        }
+		SinaAuthDialog dialog = new SinaAuthDialog(getContext(), url, new WeiboAuthListener() {
+			@Override
+			public void onComplete(Bundle bundle) {
+				mAccessToken = Oauth2AccessToken.parseAccessToken(bundle);
+				if (mAccessToken.isSessionValid()) {
+					AccessTokenKeeper.writeAccessToken(getContext(), mAccessToken);
+					performAuth(true, getString(R.string.share_status_auth_success));
+				}
+			}
 
-        // 创建微博实例
-        mWeiboAuth = new WeiboAuth(getContext(), ShareConfiguration.WEIBLOG.APPID,
-                ShareConfiguration.WEIBLOG.REDIRECT_URL, ShareConfiguration.WEIBLOG.SCOPE);
+			@Override
+			public void onWeiboException(WeiboException e) {
+				performAuth(false, getString(R.string.share_status_auth_deny));
+			}
 
-        if (isSupportSSO()) {//通过sso
-            mSsoHandler = new SsoHandler((Activity) getContext(), mWeiboAuth);
-            mSsoHandler.authorize(new WeiboAuthListener() {
-                @Override
-                public void onComplete(Bundle values) {
-                    // 从 Bundle 中解析 Token
-                    mAccessToken = Oauth2AccessToken.parseAccessToken(values);
-                    if (mAccessToken.isSessionValid()) {
-                        // 保存 Token 到 SharedPreferences
-                        AccessTokenKeeper.writeAccessToken(getContext(), mAccessToken);
-                        performAuth(true, "");
-                    } else {
-                        String code = values.getString("code");
-                        String message = getString(R.string.share_errcode_auth_deny);
-                        if (!TextUtil.isEmpty(code)) {
-                            message = message + "\nObtained the code: " + code;
-                        }
-                        performAuth(false, message);
-                    }
-                }
-
-                @Override
-                public void onCancel() {
-                    performAuth(false, getString(R.string.share_errcode_auth_cancel));
-                }
-
-                @Override
-                public void onWeiboException(WeiboException e) {
-                    performAuth(false, "Auth exception : " + e.getMessage());
-                }
-            });
-
-        } else {//通过web
-            mWeiboAuth.authorize(new WeiboAuthListener() {
-                @Override
-                public void onComplete(Bundle bundle) {
-                    if (null == bundle) {
-                        performAuth(false, getString(R.string.share_errcode_auth_fail_code));
-                        return;
-                    }
-
-                    String code = bundle.getString("code");
-                    if (TextUtil.isEmpty(code)) {
-                        performAuth(false, getString(R.string.share_errcode_auth_fail_code));
-                        return;
-                    }
-
-                    fetchTokenAsync(code, ShareConfiguration.WEIBLOG.WEIBO_DEMO_APP_SECRET);
-                }
-
-                @Override
-                public void onWeiboException(WeiboException e) {
-                    performAuth(false, "Auth exception : " + e.getMessage());
-                }
-
-                @Override
-                public void onCancel() {
-                    performAuth(false, getString(R.string.share_errcode_auth_cancel));
-                }
-            }, WeiboAuth.OBTAIN_AUTH_CODE);
-        }
-
+			@Override
+			public void onCancel() {
+				performAuth(false, getString(R.string.share_status_cancel_auth));
+			}
+		});
+		dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				performAuth(false, "");
+			}
+		});
+		dialog.show();
     }
 
-    @Override
+	@Override
     public void onLogin() {
 
     }
@@ -255,22 +244,31 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     @Override
     public boolean onEvent(Context context, Intent intent) {
         String action = intent.getAction();
-        String type = intent.getStringExtra(EXTREA_TYPE);
-        int requestCode = intent.getIntExtra(EXTREA_REQUEST_CODE, -1);
-        int resultCode = intent.getIntExtra(EXTREA_RESULT_CODE, -1);
-        if (ACTION_AUTH.equals(action) && type != null && TYPE_ACTIVITY_RESULT.equals(type)) {
-            // SSO 授权回调
-            // 重要：发起 SSO 登陆的 Activity 必须重写 onActivityResult
-            if (mSsoHandler != null) {
-                mSsoHandler.authorizeCallBack(requestCode, resultCode, intent);
+		boolean success = intent.getBooleanExtra(EXTREA_RESULT, false);
+        if (REQ_ATION.equals(action)
+                && (mWeiboShareAPI.handleWeiboResponse(intent, this) || handleResponse(intent))) {
+            return true;
+		} else if(ACTION_SHARE.equals(action) && !success && intent != null) {
+			intent.putExtra(EXTREA_RESULT, false);
+			intent.putExtra(EXTREA_MESSAGE, "");
+			dipatchShareListener(intent);
+			return true;
+        } else if(ACTION_AUTH.equals(action) && success) {
+			doShare();
+		}
+        return false;
+    }
+
+    private boolean handleResponse(Intent intent) {
+        if (intent != null) {
+            Bundle extras = intent.getExtras();
+            if (extras != null) {
+                int error_code = extras.getInt("_weibo_resp_errcode");
+                BaseResponse response = new SendMessageToWeiboResponse();
+                response.errCode = error_code;
+                onResponse(response);
+                return true;
             }
-            return true;
-        } else if (ACTION_SHARE.equals(action)
-                ||
-                (TYPE_NEW_INTENT.equals(type) && mWeiboShareAPI != null
-                        && (mWeiboShareAPI.handleWeiboResponse(intent, this)
-                        || mWeiboShareAPI.handleWeiboRequest(intent, this)))) {
-            return true;
         }
         return false;
     }
@@ -279,20 +277,15 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     public void onResponse(BaseResponse baseResponse) {
         switch (baseResponse.errCode) {
             case WBConstants.ErrorCode.ERR_OK:
-                performShare(true, getString(R.string.share_errcode_success));
+                performShare(true, getString(R.string.share_status_success));
                 break;
             case WBConstants.ErrorCode.ERR_CANCEL:
-                performShare(true, getString(R.string.share_errcode_cancel));
+                performShare(false, getString(R.string.share_status_cancel));
                 break;
             case WBConstants.ErrorCode.ERR_FAIL:
-                performShare(true, baseResponse.errMsg);
+                performShare(false, baseResponse.errMsg);
                 break;
         }
-    }
-
-    @Override
-    public void onRequest(BaseRequest baseRequest) {
-        log("onRequest.....");
     }
 
     /**
@@ -303,25 +296,73 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
     @Override
     public void onShare(IShareObject... shareObjects) {
 
-        if (shareObjects == null) {
-            return;
-        }
+		if (isSupportSSO()) {
+			if (mWeiboShareAPI.checkEnvironment(true)) {
+				mWeiboShareAPI.registerApp();
+				int supportApi = mWeiboShareAPI.getWeiboAppSupportAPI();
+				if (supportApi >= 10351 /*ApiUtils.BUILD_INT_VER_2_2*/) {
+					sendMultiMessage(shareObjects);
+				} else {
+					if (shareObjects.length != 0) {
+						sendSingleMessage(shareObjects[0]);
+					}
+				}
+			}
+		} else if (isSupportWeb()) {
+			if (mAccessToken.isSessionValid()) {
+				if (shareObjects.length != 0) {
+					sendSingleMessageByOpenApi(shareObjects[0]);
+				}
+			} else {
+				doAuth();
+			}
+		}
 
-        if (mWeiboShareAPI.checkEnvironment(true)) {
-            mWeiboShareAPI.registerApp();
-            int supportApi = mWeiboShareAPI.getWeiboAppSupportAPI();
-            if (supportApi >= 10351 /*ApiUtils.BUILD_INT_VER_2_2*/) {
-                sendMultiMessage(shareObjects);
-            } else {
-                if (shareObjects.length != 0) {
-                    sendSingleMessage(shareObjects[0]);
-                }
-            }
-        }
-    }
+	}
+
+	private void sendSingleMessageByOpenApi(IShareObject shareObject) {
+
+		WeiboParameters params = new WeiboParameters();
+		params.add("access_token", mAccessToken.getToken());
+		int urllength = (int) TextUtil.chineseLength("：" + shareObject.getRedirectUrl());
+		String cutString = TextUtil.getChineseStringByMaxLength(shareObject.getMessage(),
+				getMaxLength(shareObject) - 1 - urllength);
+		params.add("status", cutString);
+		byte[] source = null;
+		if (shareObject.getThumbnail() != null) {
+			source = BitmapUtil.bitmap2Bytes(shareObject.getThumbnail(), 80);
+			params.add("pic", "new-pic");
+		}
+
+		AsyncWeiboRunner.request4Byte("https://api.weibo.com/2/statuses/upload.json",
+				params, source, "POST", new RequestListener() {
+			@Override
+			public void onComplete(String response) {
+				log("onComplete = " + response);
+				performShare(true, getString(R.string.share_status_success));
+			}
+
+			@Override
+			public void onComplete4binary(ByteArrayOutputStream responseOS) {
+			}
+
+			@Override
+			public void onIOException(IOException e) {
+				log("onIOException = " + e.getMessage());
+				performShare(false, getString(R.string.share_errcode_unknown));
+			}
+
+			@Override
+			public void onError(WeiboException e) {
+				log("onError = " + e.toString());
+				performShare(false, getString(R.string.share_status_fail));
+			}
+		});
+
+	}
 
 
-    /**
+	/**
      * 可发送多个内容
      *
      * @param shareObjects
@@ -371,6 +412,10 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     messageForAudio.text = shareObject.getMessage();
                     weiboMessage.textObject = messageForAudio;
 
+					ImageObject imageObjectForAudio = new ImageObject();
+					imageObjectForAudio.setImageObject(shareObject.getThumbnail());
+					weiboMessage.imageObject = imageObjectForAudio;
+
                     MusicObject musicObject = new MusicObject();
                     musicObject.actionUrl = shareObject.getRedirectUrl();
                     musicObject.identify = Utility.generateGUID();
@@ -409,9 +454,14 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
         // 用transaction唯一标识一个请求
         request.transaction = String.valueOf(System.currentTimeMillis());
         request.multiMessage = weiboMessage;
-
-        // 3. 发送请求消息到微博，唤起微博分享界面
-        mWeiboShareAPI.sendRequest(request);
+        try {
+            if (weiboMessage.checkArgs()) {
+                // 3. 发送请求消息到微博，唤起微博分享界面
+                mWeiboShareAPI.sendRequest(request);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendSingleMessage(IShareObject shareObject) {
@@ -477,8 +527,15 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
         request.transaction = String.valueOf(System.currentTimeMillis());
         request.message = weiboMessage;
 
-        // 3. 发送请求消息到微博，唤起微博分享界面
-        mWeiboShareAPI.sendRequest(request);
+        try {
+            if (weiboMessage.checkArgs()) {
+                // 3. 发送请求消息到微博，唤起微博分享界面
+                mWeiboShareAPI.sendRequest(request);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -486,7 +543,8 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
      */
     @Override
     public void onCancelAuth() {
-        AccessTokenKeeper.clear(getContext());
+		AccessTokenKeeper.clear(getContext());
+		mAccessToken = AccessTokenKeeper.readAccessToken(getContext());
     }
 
     @Override
@@ -520,7 +578,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     if (TextUtil.isEmpty(shareObject.getMessage())) {
                         notifyEvent(getString(R.string.share_text_empty));
                         validate = false;
-                    } else if (TextUtil.length(shareObject.getMessage()) > MAX_LENGHT_OF_CONTENT) {
+                    } else if (TextUtil.chineseLength(shareObject.getMessage()) > MAX_LENGHT_OF_CONTENT - 1) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         validate = false;
                     }
@@ -545,7 +603,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     } else if(shareObject.getContentSize() <= 0) {
                         notifyEvent(getString(R.string.share_music_invalidate_duration));
                         validate = false;
-                    } else if(TextUtil.isEmpty(shareObject.getTitle()) || TextUtil.isEmpty(shareObject.getSecondTitle())) {
+                    } else if(TextUtil.isEmpty(shareObject.getTitle()) ) {
                         notifyEvent(getString(R.string.share_music_title_empty));
                         validate = false;
                     }
@@ -565,7 +623,7 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
                     } else if(shareObject.getContentSize() <= 0) {
                         notifyEvent(getString(R.string.share_video_invalidate_duration));//时长
                         validate = false;
-                    } else if(TextUtil.isEmpty(shareObject.getTitle()) || TextUtil.isEmpty(shareObject.getSecondTitle())) {//title
+                    } else if(TextUtil.isEmpty(shareObject.getTitle()) ) {//title
                         notifyEvent(getString(R.string.share_video_title_empty));
                         validate = false;
                     }
@@ -577,151 +635,72 @@ public class WeiBlog extends BaseOption implements IWeiboHandler.Response, IWeib
         return validate;
     }
 
-    /**
-     * 该 Handler 配合 {@link com.easyhome.common.net.RequestListener} 对应的回调来更新 UI。
-     */
-    private Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MSG_FETCH_TOKEN_SUCCESS:
-                    performAuth(true, getString(R.string.share_errcode_auth_success));
-                    break;
+	/**
+	 * 该类定义了微博授权时所需要的参数。
+	 *
+	 * @author SINA
+	 * @since 2013-10-07
+	 */
+	public static class AccessTokenKeeper {
+		private static final String PREFERENCES_NAME = "com_weibo_sdk_android";
 
-                case MSG_FETCH_TOKEN_FAILED:
-                    performAuth(true, getString(R.string.share_errcode_auth_deny));
-                    break;
+		private static final String KEY_UID           = "uid";
+		private static final String KEY_ACCESS_TOKEN  = "access_token";
+		private static final String KEY_EXPIRES_IN    = "expires_in";
 
-                default:
-                    break;
-            }
-        }
+		/**
+		 * 保存 Token 对象到 SharedPreferences。
+		 *
+		 * @param context 应用程序上下文环境
+		 * @param token   Token 对象
+		 */
+		public static void writeAccessToken(Context context, Oauth2AccessToken token) {
+			if (null == context || null == token) {
+				return;
+			}
 
-        ;
-    };
+			SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
+			SharedPreferences.Editor editor = pref.edit();
+			editor.putString(KEY_UID, token.getUid());
+			editor.putString(KEY_ACCESS_TOKEN, token.getToken());
+			editor.putLong(KEY_EXPIRES_IN, token.getExpiresTime());
+			editor.commit();
+		}
 
-    /**
-     * 异步获取 Token。
-     *
-     * @param authCode  授权 Code，该 Code 是一次性的，只能被获取一次 Token
-     * @param appSecret 应用程序的 APP_SECRET，请务必妥善保管好自己的 APP_SECRET，
-     *                  不要直接暴露在程序中，此处仅作为一个DEMO来演示。
-     */
-    public void fetchTokenAsync(String authCode, String appSecret) {
-        WeiboParameters requestParams = new WeiboParameters();
-        requestParams.add(WBConstants.AUTH_PARAMS_CLIENT_ID, ShareConfiguration.WEIBLOG.APPID);
-        requestParams.add(WBConstants.AUTH_PARAMS_CLIENT_SECRET, appSecret);
-        requestParams.add(WBConstants.AUTH_PARAMS_GRANT_TYPE, "authorization_code");
-        requestParams.add(WBConstants.AUTH_PARAMS_CODE, authCode);
-        requestParams.add(WBConstants.AUTH_PARAMS_REDIRECT_URL, ShareConfiguration.WEIBLOG.REDIRECT_URL);
+		/**
+		 * 从 SharedPreferences 读取 Token 信息。
+		 *
+		 * @param context 应用程序上下文环境
+		 *
+		 * @return 返回 Token 对象
+		 */
+		public static Oauth2AccessToken readAccessToken(Context context) {
+			if (null == context) {
+				return null;
+			}
 
-        /**
-         * 请注意：
-         * {@link RequestListener} 对应的回调是运行在后台线程中的，
-         * 因此，需要使用 Handler 来配合更新 UI。
-         */
-        AsyncWeiboRunner.request(ShareConfiguration.WEIBLOG.OAUTH2_ACCESS_TOKEN_URL,
-                requestParams, "POST", new RequestListener() {
-            @Override
-            public void onComplete(String response) {
-                LogUtil.d(TAG, "Response: " + response);
+			Oauth2AccessToken token = new Oauth2AccessToken();
+			SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
+			token.setUid(pref.getString(KEY_UID, ""));
+			token.setToken(pref.getString(KEY_ACCESS_TOKEN, ""));
+			token.setExpiresTime(pref.getLong(KEY_EXPIRES_IN, 0));
+			return token;
+		}
 
-                // 获取 Token 成功
-                Oauth2AccessToken token = Oauth2AccessToken.parseAccessToken(response);
-                if (token != null && token.isSessionValid()) {
-                    LogUtil.d(TAG, "Success! " + token.toString());
+		/**
+		 * 清空 SharedPreferences 中 Token信息。
+		 *
+		 * @param context 应用程序上下文环境
+		 */
+		public static void clear(Context context) {
+			if (null == context) {
+				return;
+			}
 
-                    mAccessToken = token;
-                    mHandler.obtainMessage(MSG_FETCH_TOKEN_SUCCESS).sendToTarget();
-                } else {
-                    LogUtil.d(TAG, "Failed to receive access token");
-                }
-            }
-
-            @Override
-            public void onComplete4binary(ByteArrayOutputStream responseOS) {
-                LogUtil.e(TAG, "onComplete4binary...");
-                mHandler.obtainMessage(MSG_FETCH_TOKEN_FAILED).sendToTarget();
-            }
-
-            @Override
-            public void onIOException(IOException e) {
-                LogUtil.e(TAG, "onIOException： " + e.getMessage());
-                mHandler.obtainMessage(MSG_FETCH_TOKEN_FAILED).sendToTarget();
-            }
-
-            @Override
-            public void onError(WeiboException e) {
-                LogUtil.e(TAG, "WeiboException： " + e.getMessage());
-                mHandler.obtainMessage(MSG_FETCH_TOKEN_FAILED).sendToTarget();
-            }
-        });
-    }
-
-    /**
-     * 该类定义了微博授权时所需要的参数。
-     *
-     * @author SINA
-     * @since 2013-10-07
-     */
-    public static class AccessTokenKeeper {
-        private static final String PREFERENCES_NAME = "com_weibo_sdk_android";
-
-        private static final String KEY_UID = "uid";
-        private static final String KEY_ACCESS_TOKEN = "access_token";
-        private static final String KEY_EXPIRES_IN = "expires_in";
-
-        /**
-         * 保存 Token 对象到 SharedPreferences。
-         *
-         * @param context 应用程序上下文环境
-         * @param token   Token 对象
-         */
-        public static void writeAccessToken(Context context, Oauth2AccessToken token) {
-            if (null == context || null == token) {
-                return;
-            }
-
-            SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
-            SharedPreferences.Editor editor = pref.edit();
-            editor.putString(KEY_UID, token.getUid());
-            editor.putString(KEY_ACCESS_TOKEN, token.getToken());
-            editor.putLong(KEY_EXPIRES_IN, token.getExpiresTime());
-            editor.commit();
-        }
-
-        /**
-         * 从 SharedPreferences 读取 Token 信息。
-         *
-         * @param context 应用程序上下文环境
-         * @return 返回 Token 对象
-         */
-        public static Oauth2AccessToken readAccessToken(Context context) {
-            if (null == context) {
-                return null;
-            }
-
-            Oauth2AccessToken token = new Oauth2AccessToken();
-            SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
-            token.setUid(pref.getString(KEY_UID, ""));
-            token.setToken(pref.getString(KEY_ACCESS_TOKEN, ""));
-            token.setExpiresTime(pref.getLong(KEY_EXPIRES_IN, 0));
-            return token;
-        }
-
-        /**
-         * 清空 SharedPreferences 中 Token信息。
-         *
-         * @param context 应用程序上下文环境
-         */
-        public static void clear(Context context) {
-            if (null == context) {
-                return;
-            }
-
-            SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
-            SharedPreferences.Editor editor = pref.edit();
-            editor.clear();
-            editor.commit();
-        }
-    }
+			SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
+			SharedPreferences.Editor editor = pref.edit();
+			editor.clear();
+			editor.commit();
+		}
+	}
 }

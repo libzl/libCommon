@@ -1,11 +1,12 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.model.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.tencent.tauth.Tencent;
@@ -19,6 +20,10 @@ import com.tencent.tauth.Tencent;
 public class QQFriends extends QQConnect {
 
     private int mExtarFlag;
+
+    public QQFriends(Context context) {
+        super(context);
+    }
 
     @Override
     public int getIcon() {
@@ -74,26 +79,27 @@ public class QQFriends extends QQConnect {
         params.putString(Tencent.SHARE_TO_QQ_APP_NAME, ShareConfiguration.APPNAME);
         params.putInt(Tencent.SHARE_TO_QQ_KEY_TYPE, shareType);
 
-        if (!ShareConfiguration.ENABLE_QQFRIENDS_SHOW_QQZONE_ITEM) {
-            if (ShareConfiguration.ENABLE_QQFRIENDS_SHOW_QQZONE_DIALOG) {
-                // 最后一个二进制位置为1, 其他位不变
-                mExtarFlag |= Tencent.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN;
-            } else {
-                // 最后一个二进制位置为0, 其他位不变
-                mExtarFlag &= (0xFFFFFFFF - Tencent.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN);
-            }
-        } else if (!ShareConfiguration.ENABLE_QQFRIENDS_SHOW_QQZONE_DIALOG) {
-            if (ShareConfiguration.ENABLE_QQFRIENDS_SHOW_QQZONE_ITEM) {
-                // 倒数第二位置为1, 其他位不变
-                mExtarFlag |= Tencent.SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE;
-            } else {
-                // 倒数第二位置为0, 其他位不变
-                mExtarFlag &= (0xFFFFFFFF - Tencent.SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE);
-            }
+        if (isUseQzone()) {
+            mExtarFlag |= Tencent.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN;
+            mExtarFlag &= (0xFFFFFFFF - Tencent.SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE);
+        } else {
+            mExtarFlag &= (0xFFFFFFFF - Tencent.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN);
+            mExtarFlag |= Tencent.SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE;
         }
+
         params.putInt(Tencent.SHARE_TO_QQ_EXT_INT, mExtarFlag);
 
-        mTencent.shareToQQ((Activity) getContext(), params, this);
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                mTencent.shareToQQ((Activity) getContext(), params, QQFriends.this);
+            }
+        }.start();
+    }
+
+    protected boolean isUseQzone() {
+        return false;
     }
 
     @Override
@@ -112,9 +118,6 @@ public class QQFriends extends QQConnect {
 
             if (TextUtil.isEmpty(object.getTitle())) {
                 notifyEvent(getString(R.string.share_text_empty));
-                return false;
-            } else if(TextUtil.isEmpty(object.getSecondTitle())) {
-                notifyEvent(getString(R.string.share_text_title_empty));
                 return false;
             } else if(TextUtil.isEmpty(object.getRedirectUrl())
                     || !URIUtil.isValidHttpUri(object.getRedirectUrl())) {
@@ -161,4 +164,15 @@ public class QQFriends extends QQConnect {
         }
         return true;
     }
+
+    @Override
+    public void onCancel() {
+        String action = getCurrentAction();
+        if (ACTION_LOGIN.equals(action)) {
+            performLogin(false, getString(R.string.share_errcode_login_cancel));
+        } else if (ACTION_SHARE.equals(action)) {
+            performShare(false, "");
+        }
+    }
+
 }

@@ -16,10 +16,10 @@
 
 package com.easyhome.common.net;
 
+import com.sina.weibo.sdk.exception.WeiboException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
-import com.sina.weibo.sdk.exception.WeiboException;
 
 /**
  * 发起访问请求时所需的回调接口。

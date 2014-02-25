@@ -13,7 +13,7 @@ public class DownloadActivity {
     public static class DownloadFragment extends BaseFragment {
         @Override
         public CharSequence getTitle() {
-            return getString(R.string.title_section4);
+            return getString(R.string.title_section3);
         }
 
         public static BaseFragment newInstance() {

@@ -1,12 +1,12 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.model.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.tencent.mm.sdk.openapi.BaseReq;
@@ -33,14 +33,20 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
     private boolean mTimeline;//是否分享到朋友圈
     private boolean mRegisterApp;//是否注册到微信中
 
-    public WeiChat(){
+    public WeiChat(Context context){
+        super(context);
     }
 
     public WeiChat(Context context, IShareObject shareObject) {
         super(context, shareObject);
     }
 
-    public WeiChat(Context context, IShareObject shareObject, boolean timeline) {
+	@Override
+	public String getAppName() {
+		return getString(ShareConfiguration.WEICHAT.APP_NAME_ID);
+	}
+
+	public WeiChat(Context context, IShareObject shareObject, boolean timeline) {
         super(context, shareObject);
         mTimeline = timeline;
     }
@@ -186,7 +192,7 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
             return false;
         }
 
-        if (TextUtil.isEmpty(shareObject.getTitle()) || TextUtil.isEmpty(shareObject.getSecondTitle())) {
+        if (TextUtil.isEmpty(shareObject.getTitle())) {
             notifyEvent(getString(R.string.share_text_title_empty));
             return false;
         }
@@ -261,8 +267,10 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
                 break;
             case TYPE_MUSIC:
                 mediaObject = new WXMusicObject();
-                ((WXMusicObject) mediaObject).musicUrl = shareObject.getMediaUrl();
-                ((WXMusicObject) mediaObject).musicLowBandUrl = shareObject.getLowBandMediaUrl();
+                ((WXMusicObject) mediaObject).musicUrl = shareObject.getRedirectUrl();
+				((WXMusicObject) mediaObject).musicLowBandUrl = shareObject.getRedirectUrl();
+				((WXMusicObject) mediaObject).musicDataUrl = shareObject.getMediaUrl();
+				((WXMusicObject) mediaObject).musicLowBandDataUrl = shareObject.getLowBandMediaUrl();
                 break;
             case TYPE_VIDEO:
                 mediaObject = new WXVideoObject();
@@ -286,9 +294,9 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
         msg.title = shareObject.getTitle();
         msg.description = shareObject.getSecondTitle();
 
-        Bitmap thumb = shareObject.getThumbnail();
-        if (thumb != null) {
-            msg.thumbData = Util.bmpToByteArray(thumb, true);
+        Bitmap thumbnail = shareObject.getThumbnail();
+        if (thumbnail != null) {
+            msg.thumbData = Util.bmpToByteArray(thumbnail, true);
         }
 
         SendMessageToWX.Req req = new SendMessageToWX.Req();
@@ -296,6 +304,7 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
         req.message = msg;
         req.scene = mTimeline ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
         mApi.sendReq(req);
+        performShare(true, "");
     }
 
     private String buildTransaction(String type) {
@@ -314,13 +323,13 @@ public class WeiChat extends BaseOption implements IWXAPIEventHandler {
 
         switch (baseResp.errCode) {
             case BaseResp.ErrCode.ERR_OK:
-                message = getString(R.string.share_errcode_success);
+                message = getString(R.string.share_status_success);
                 break;
             case BaseResp.ErrCode.ERR_USER_CANCEL:
-                message = getString(R.string.share_errcode_cancel);
+                message = getString(R.string.share_status_cancel);
                 break;
             case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                message = getString(R.string.share_errcode_auth_deny);
+                message = getString(R.string.share_status_auth_deny);
                 break;
             default:
                 if (message == null || message.equals("")) {

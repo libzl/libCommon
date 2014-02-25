@@ -1,4 +1,4 @@
-package com.easyhome.common.share;
+package com.easyhome.common.share.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,8 +14,10 @@ import android.widget.Toast;
 
 import com.easyhome.common.R;
 import com.easyhome.common.app.BaseFragment;
-import com.easyhome.common.share.object.IShareObject;
-import com.easyhome.common.share.option.IShareOption;
+import com.easyhome.common.share.ShareTester;
+import com.easyhome.common.share.logic.ShareManager;
+import com.easyhome.common.share.model.IShareObject;
+import com.easyhome.common.share.logic.IShareOption;
 import com.easyhome.common.utils.TextUtil;
 
 /**
@@ -158,12 +160,16 @@ public class ShareActivity extends ActionBarActivity {
          * @param message
          */
         @Override
-        public void onResponceShare(boolean success, String message) {
-            if (!TextUtil.isEmpty(message)) {
-                Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
-            }
+        public void onResponceShare(IShareOption option, boolean success, String message) {
+			if (!TextUtil.isEmpty(message)) {
+				Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+			}
         }
 
-    }
+		@Override
+		public void onResponceAuth(IShareOption option, boolean success, String message) {
+
+		}
+	}
 
 }

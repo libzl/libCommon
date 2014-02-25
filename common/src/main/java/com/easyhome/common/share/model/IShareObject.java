@@ -1,6 +1,7 @@
-package com.easyhome.common.share.object;
+package com.easyhome.common.share.model;
 
 import android.graphics.Bitmap;
+import android.os.Parcelable;
 
 /**
  * <description>
@@ -8,7 +9,7 @@ import android.graphics.Bitmap;
  * @author zhoulu
  * @date 13-12-11
  */
-public interface IShareObject {
+public interface IShareObject extends Parcelable {
 
     /**
      * 获得一个媒体链接：音乐、视频、网址

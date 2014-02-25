@@ -1,17 +1,10 @@
-package com.easyhome.common.share;
+package com.easyhome.common.share.logic;
 
 import android.content.Context;
 import android.content.Intent;
 
-import com.easyhome.common.share.object.IShareObject;
-import com.easyhome.common.share.option.BaseOption;
-import com.easyhome.common.share.option.IShareOption;
-import com.easyhome.common.share.option.QQFriends;
-import com.easyhome.common.share.option.QQWeibo;
-import com.easyhome.common.share.option.QQZone;
-import com.easyhome.common.share.option.RenRen;
-import com.easyhome.common.share.option.WeiBlog;
-import com.easyhome.common.share.option.WeiChat;
+import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.model.IShareObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +37,42 @@ public class ShareManager {
         }
         return INSTANCE;
     }
+
+	/**
+	 * 检测是否支持该option分享
+	 * @param context
+	 * @param option
+	 * @return
+	 */
+	public boolean isSupport(Context context, int option) {
+		BaseOption shareOption = mShareCreator.createShareOption(context, option);
+		if (shareOption != null) {
+			return shareOption.checkSupport();
+		}
+		return false;
+	}
+
+	/**
+	 * 是否安装软件
+	 * @param context
+	 * @param option
+	 * @return
+	 */
+	public boolean isInstalled(Context context, int option) {
+		BaseOption shareOption = mShareCreator.createShareOption(context, option);
+		if (shareOption != null) {
+			return shareOption.isInstalledApp();
+		}
+		return false;
+	}
+
+	/**
+	 * 是否开启消息通知
+	 * @param enable
+	 */
+	public void enableShowNotify(boolean enable) {
+		ShareConfiguration.ENABLE_SHOW_NOTIFY = enable;
+	}
 
     /**
      * 进行登录
@@ -87,6 +116,11 @@ public class ShareManager {
         }
     }
 
+	public void clearAllAuth() {
+		for (BaseOption option : mCreatedOptions.values()) {
+			option.onCancelAuth();
+		}
+	}
 
     /**
      * Handle Activity's onActivityResult() method.
@@ -140,6 +174,10 @@ public class ShareManager {
         mShareCreator.createShareOption(context, OPTION_RENREN);
     }
 
+    public IShareOption getOption(int option) {
+        return mCreatedOptions.get(option);
+    }
+
     /**
      * 分享项工厂
      */
@@ -180,17 +218,21 @@ public class ShareManager {
                     if (!ShareConfiguration.ENABLE_QQZONE) {
                         return null;
                     }
-                    if (shareOption == null) {
-                        shareOption = new QQZone();
-                        mCreatedOptions.put(option, shareOption);
-                    }
-                    break;
+                    if (shareOption == null
+							|| (shareOption instanceof QQzoneWeb && shareOption.isSupportSSO())) {
+						shareOption = new QQZone(context);
+						mCreatedOptions.put(option, shareOption);
+                    } else if (shareOption instanceof QQZone && !shareOption.isSupportSSO()) {
+						shareOption = new QQzoneWeb(context);
+						mCreatedOptions.put(option, shareOption);
+					}
+					break;
                 case OPTION_QQFIRENTS:
                     if (!ShareConfiguration.ENABLE_QQFRIENDS) {
                         return null;
                     }
                     if (shareOption == null) {
-                        shareOption = new QQFriends();
+                        shareOption = new QQFriends(context);
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;
@@ -199,7 +241,7 @@ public class ShareManager {
                         return null;
                     }
                     if (shareOption == null) {
-                        shareOption = new QQWeibo();
+                        shareOption = new QQWeibo(context);
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;
@@ -208,7 +250,7 @@ public class ShareManager {
                         return null;
                     }
                     if (shareOption == null) {
-                        shareOption = new RenRen();
+                        shareOption = new RenRen(context);
                         mCreatedOptions.put(option, shareOption);
                     }
                     break;

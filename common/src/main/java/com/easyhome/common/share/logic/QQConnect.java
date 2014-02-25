@@ -1,12 +1,14 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.object.IShareObject;
 import com.easyhome.common.share.ShareConfiguration;
+import com.easyhome.common.share.model.IShareObject;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
@@ -22,8 +24,10 @@ import org.json.JSONObject;
 public abstract class QQConnect extends BaseOption implements IUiListener {
 
     public Tencent mTencent;
+	private boolean mIsNeedUpdate;
 
-    protected QQConnect() {
+    protected QQConnect(Context context) {
+        super(context);
     }
 
     protected QQConnect(Context context, IShareObject shareObject) {
@@ -35,19 +39,47 @@ public abstract class QQConnect extends BaseOption implements IUiListener {
         return ShareConfiguration.QQCONNECT.APPID;
     }
 
-    @Override
+	@Override
+	public String getAppName() {
+		return getString(ShareConfiguration.QQCONNECT.APP_NAME_ID);
+	}
+
+	@Override
     public boolean isSupportSSO() {
-        return false;
+        return isInstalledApp() && !isNeedUpdate();
     }
 
     @Override
     public boolean isSupportWeb() {
-        return true;
+        return false;
     }
 
-    @Override
+	@Override
+	public boolean isNeedUpdate() {
+		return mIsNeedUpdate;
+	}
+
+	@Override
     public boolean isInstalledApp() {
-        return false;
+		PackageManager pm = getContext().getPackageManager();
+		boolean isInstalled = false;
+		try {
+			String qqPackageName = "com.tencent.mobileqq";
+			PackageInfo pi = pm.getPackageInfo(qqPackageName, PackageManager.GET_ACTIVITIES);
+			int versionCode = pi.versionCode;
+			int enableFlag = pm.getApplicationEnabledSetting(qqPackageName);
+			if (enableFlag == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+					|| enableFlag == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT) {
+				isInstalled = true;
+			}
+
+			if (versionCode <= 13) {
+				mIsNeedUpdate = true;
+			}
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		return isInstalled;
     }
 
     @Override
@@ -96,7 +128,7 @@ public abstract class QQConnect extends BaseOption implements IUiListener {
         if (ACTION_LOGIN.equals(action)) {
             performLogin(true, "");
         } else if (ACTION_SHARE.equals(action)) {
-            performShare(true, getString(R.string.share_errcode_success));
+            performShare(true, getString(R.string.share_status_success));
         }
     }
 
@@ -106,7 +138,7 @@ public abstract class QQConnect extends BaseOption implements IUiListener {
         if (ACTION_LOGIN.equals(action)) {
             performLogin(false, getString(R.string.share_errcode_login_fail));
         } else if (ACTION_SHARE.equals(action)) {
-            performShare(false, getString(R.string.share_errcode_fail));
+            performShare(false, getString(R.string.share_status_fail));
         }
     }
 
@@ -116,7 +148,7 @@ public abstract class QQConnect extends BaseOption implements IUiListener {
         if (ACTION_LOGIN.equals(action)) {
             performLogin(false, getString(R.string.share_errcode_login_cancel));
         } else if (ACTION_SHARE.equals(action)) {
-            performShare(false, getString(R.string.share_errcode_cancel));
+            performShare(false, getString(R.string.share_status_cancel));
         }
     }
 }

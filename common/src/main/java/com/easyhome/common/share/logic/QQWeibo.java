@@ -1,4 +1,4 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.app.Activity;
 import android.content.Context;
@@ -6,9 +6,9 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.easyhome.common.R;
-import com.easyhome.common.app.UiThreadHandler;
+import com.easyhome.common.async.UiThreadHandler;
 import com.easyhome.common.share.ShareConfiguration;
-import com.easyhome.common.share.object.IShareObject;
+import com.easyhome.common.share.model.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
 import com.tencent.mm.sdk.platformtools.Util;
@@ -37,6 +37,16 @@ public class QQWeibo extends QQConnect {
 
     private String mLastAddTweetId;//最近发成功的微博ID
 
+
+    public QQWeibo(Context context) {
+        super(context);
+    }
+
+	@Override
+	public boolean isSupportWeb() {
+		return true;
+	}
+
     @Override
     public int getIcon() {
         return ShareConfiguration.QQCONNECT.QQWEIBO_ICON_ID;
@@ -45,6 +55,15 @@ public class QQWeibo extends QQConnect {
     @Override
     public String getName() {
         return getString(ShareConfiguration.QQCONNECT.QQWEIBO_NAME_ID);
+    }
+
+    @Override
+    public int getMaxLength(IShareObject object) {
+		int extraLenght = 0;
+		if (object != null) {
+			extraLenght = (int) TextUtil.chineseLength(object.getRedirectUrl());
+		}
+		return MAX_LENGHT_OF_CONTENT - extraLenght;
     }
 
     @Override
@@ -93,11 +112,11 @@ public class QQWeibo extends QQConnect {
         if (TextUtil.isEmpty(url)) {
             url = object.getLowBandMediaUrl();
         }
-        return object.getMessage() + object.getTitle() + object.getSecondTitle() + url;
+        return object.getMessage();// + object.getTitle() + object.getSecondTitle() + url;
     }
 
     private String getWebpageContent(IShareObject object) {
-        return object.getMessage() + object.getTitle() + object.getSecondTitle() + object.getRedirectUrl();
+        return object.getMessage() + object.getTitle() + object.getSecondTitle();
     }
 
     @Override
@@ -121,7 +140,7 @@ public class QQWeibo extends QQConnect {
                     if (TextUtil.isEmpty(object.getMessage())) {
                         notifyEvent(getString(R.string.share_text_empty));
                         return false;
-                    } else if(TextUtil.length(object.getMessage()) > MAX_LENGHT_OF_CONTENT) {
+                    } else if(TextUtil.chineseLength(object.getMessage()) > MAX_LENGHT_OF_CONTENT - 1) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -134,9 +153,12 @@ public class QQWeibo extends QQConnect {
                         notifyEvent(getString(R.string.share_webpage_invalidate_url));
                         return false;
                     } else if(object.getThumbnail() == null) {
-                        notifyEvent(getString(R.string.share_image_empty));
-                        return false;
-                    } else if(TextUtil.length(getWebpageContent(object)) > MAX_LENGHT_OF_CONTENT) {
+						String[] urls = object.getThumbnailUrl();
+						if (urls == null || urls.length <= 0 || TextUtil.isEmpty(urls[0])) {
+							notifyEvent(getString(R.string.share_image_empty));
+							return false;
+						}
+                    } else if(TextUtil.chineseLength(getWebpageContent(object)) > MAX_LENGHT_OF_CONTENT - 1) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -149,9 +171,12 @@ public class QQWeibo extends QQConnect {
                         notifyEvent(getString(R.string.share_webpage_invalidate_url));
                         return false;
                     } else if(object.getThumbnail() == null) {
-                        notifyEvent(getString(R.string.share_image_empty));
-                        return false;
-                    } else if(TextUtil.length(getMediaContent(object)) > MAX_LENGHT_OF_CONTENT) {
+						String[] urls = object.getThumbnailUrl();
+						if (urls == null || urls.length <= 0 || TextUtil.isEmpty(urls[0])) {
+							notifyEvent(getString(R.string.share_image_empty));
+							return false;
+						}
+                    } else if(TextUtil.chineseLength(getMediaContent(object)) > MAX_LENGHT_OF_CONTENT - 1) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -165,16 +190,20 @@ public class QQWeibo extends QQConnect {
                             || (!URIUtil.isValidHttpUri(object.getMediaUrl()) && !URIUtil.isValidHttpUri(object.getLowBandMediaUrl()))) {
                         notifyEvent(getString(R.string.share_music_invalidate_url));
                         return false;
-                    } else if (TextUtil.isEmpty(object.getTitle()) || TextUtil.isEmpty(object.getSecondTitle())) {
+                    } else if (TextUtil.isEmpty(object.getTitle()) ) {
                         notifyEvent(getString(R.string.share_music_title_empty));
                         return false;
                     } else if (TextUtil.isEmpty(object.getRedirectUrl()) || !URIUtil.isValidHttpUri(object.getRedirectUrl())) {
                         notifyEvent(getString(R.string.share_music_invalidate_redirect_url));
                         return false;
                     } else if(object.getThumbnail() == null) {
-                        notifyEvent(getString(R.string.share_image_empty));
+						String[] urls = object.getThumbnailUrl();
+						if (urls == null || urls.length <= 0 || TextUtil.isEmpty(urls[0])) {
+							notifyEvent(getString(R.string.share_image_empty));
+							return false;
+						}
                         return false;
-                    } else if(TextUtil.length(getMediaContent(object)) > MAX_LENGHT_OF_CONTENT) {
+                    } else if(TextUtil.chineseLength(getMediaContent(object)) > MAX_LENGHT_OF_CONTENT - 1) {
                         notifyEvent(getString(R.string.share_text_too_long));
                         return false;
                     }
@@ -217,7 +246,7 @@ public class QQWeibo extends QQConnect {
                     }
                 }
                 if (ret == 0) {//成功
-                    performShare(true, getString(R.string.share_errcode_success));
+                    performShare(true, getString(R.string.share_status_success));
                 } else if (ret == 100030) {
                     if (mNeedReAuth) {
                         Runnable r = new Runnable() {
@@ -227,7 +256,7 @@ public class QQWeibo extends QQConnect {
                         };
                         UiThreadHandler.post(r);
                     } else {
-                        performShare(false, getString(R.string.share_errcode_auth_deny));
+                        performShare(false, getString(R.string.share_status_auth_deny));
                     }
                 }
             } catch (JSONException e) {

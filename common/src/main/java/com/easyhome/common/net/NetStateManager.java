@@ -16,8 +16,6 @@
 
 package com.easyhome.common.net;
 
-import org.apache.http.HttpHost;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +24,8 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+
+import org.apache.http.HttpHost;
 
 /**
  * 网络状态管理类。

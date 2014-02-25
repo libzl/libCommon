@@ -1,9 +1,10 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.content.Context;
 import android.content.Intent;
 
-import com.easyhome.common.share.object.IShareObject;
+import com.easyhome.common.share.model.IShareObject;
+
 
 /**
  * 人人网
@@ -12,14 +13,20 @@ import com.easyhome.common.share.object.IShareObject;
  * @date 13-12-13
  */
 public class RenRen extends BaseOption{
-    public RenRen() {
+    public RenRen(Context context) {
+        super(context);
     }
 
     public RenRen(Context context, IShareObject shareObject) {
         super(context, shareObject);
     }
 
-    @Override
+	@Override
+	public String getAppName() {
+		return null;
+	}
+
+	@Override
     public String getAppId() {
         return null;
     }

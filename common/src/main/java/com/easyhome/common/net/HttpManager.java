@@ -16,25 +16,12 @@
 
 package com.easyhome.common.net;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.zip.GZIPInputStream;
+import android.content.Context;
+import android.text.TextUtils;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import com.sina.weibo.sdk.auth.WeiboParameters;
+import com.sina.weibo.sdk.exception.WeiboException;
+import com.sina.weibo.sdk.utils.Utility;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -61,13 +48,26 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.HTTP;
 
-import android.content.Context;
-import android.text.TextUtils;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.zip.GZIPInputStream;
 
-import com.easyhome.common.share.ShareException;
-import com.sina.weibo.sdk.auth.WeiboParameters;
-import com.sina.weibo.sdk.exception.WeiboException;
-import com.sina.weibo.sdk.utils.Utility;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * HTTP 请求类，用于管理通用的 HTTP 请求、图片上传下载等。
@@ -152,7 +152,7 @@ public class HttpManager {
 
             if (statusCode != 200) {
                 result = readHttpResponse(response);
-                throw new ShareException(result, statusCode);
+                throw new WeiboException(result);
             }
             result = readHttpResponse(response);
             return result;
@@ -223,7 +223,7 @@ public class HttpManager {
 
             if (statusCode != 200) {
                 result = readHttpResponse(response);
-                throw new ShareException(result, statusCode);
+                throw new WeiboException(result);
             }
             result = readHttpResponse(response);
             return result;
@@ -294,7 +294,7 @@ public class HttpManager {
 
             if (statusCode != 200) {
                 String resultStr = readHttpResponse(response);
-                throw new ShareException(resultStr, statusCode);
+                throw new WeiboException(resultStr);
             }
             result = readBytesFromHttpResponse(response);
             return result;
@@ -302,6 +302,77 @@ public class HttpManager {
             throw new WeiboException(e);
         }
     }
+
+    /**
+     * 根据 URL 异步请求数据。
+     *
+     * @param url     请求的地址
+     * @param method  "GET" or "POST"
+     * @param params  存放参数的容器
+     * @param fileContent 文件数据
+     *
+     * @return 返回响应结果
+     * @throws com.sina.weibo.sdk.exception.WeiboException 如果发生错误，则以该异常抛出
+     */
+    public static String openUrl4Byte(String url, String method,
+            WeiboParameters params, byte[] fileContent) throws WeiboException {
+        String result = null;
+		try {
+			HttpClient client = getNewHttpClient();
+			HttpUriRequest request = null;
+			ByteArrayOutputStream bos = null;
+			client.getParams()
+					.setParameter(ConnRoutePNames.DEFAULT_PROXY, NetStateManager.getAPN());
+			if (method.equals(HTTPMETHOD_GET)) {
+				url = url + "?" + Utility.encodeUrl(params);
+				HttpGet get = new HttpGet(url);
+				request = get;
+			} else if (method.equals(HTTPMETHOD_POST)) {
+				HttpPost post = new HttpPost(url);
+				request = post;
+				byte[] data = null;
+				String _contentType = params.getValue("content-type");
+
+				bos = new ByteArrayOutputStream();
+				if (fileContent != null && fileContent.length > 0) {
+					paramToUpload(bos, params);
+					post.setHeader("Content-Type", MULTIPART_FORM_DATA + "; boundary=" + BOUNDARY);
+					imageContentToUpload4Byte(bos, fileContent);
+				} else {
+					if (_contentType != null) {
+						params.remove("content-type");
+						post.setHeader("Content-Type", _contentType);
+					} else {
+						post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+					}
+
+					String postParam = Utility.encodeParameters(params);
+					data = postParam.getBytes("UTF-8");
+					bos.write(data);
+				}
+				data = bos.toByteArray();
+				bos.close();
+				ByteArrayEntity formEntity = new ByteArrayEntity(data);
+				post.setEntity(formEntity);
+			} else if (method.equals("DELETE")) {
+				request = new HttpDelete(url);
+			}
+			HttpResponse response = client.execute(request);
+			StatusLine status = response.getStatusLine();
+			int statusCode = status.getStatusCode();
+
+			if (statusCode != 200) {
+				String resultStr = readHttpResponse(response);
+				throw new WeiboException(resultStr);
+			}
+			result = readHttpResponse(response);
+			return result;
+		} catch (IOException e) {
+			throw new WeiboException(e);
+		} catch (Exception e) {
+			throw new WeiboException(e);
+		}
+	}
 
     private static HttpClient getNewHttpClient() {
         try {
@@ -346,7 +417,7 @@ public class HttpManager {
         SSLContext sslContext = SSLContext.getInstance("TLS");
 
         public MySSLSocketFactory(KeyStore truststore) throws NoSuchAlgorithmException,
-                KeyManagementException, KeyStoreException, UnrecoverableKeyException {
+				KeyManagementException, KeyStoreException, UnrecoverableKeyException {
             super(truststore);
 
             TrustManager tm = new X509TrustManager() {
@@ -409,14 +480,51 @@ public class HttpManager {
                 .append("news_image").append("\"\r\n");
         String filetype = "image/png";
         temp.append("Content-Type: ").append(filetype).append("\r\n\r\n");
-        // temp.append("content-disposition: form-data; name=\"file\"; filename=\"")
-        // .append(imgpath).append("\"\r\n");
-        // temp.append("Content-Type: application/octet-stream; charset=utf-8\r\n\r\n");
         byte[] res = temp.toString().getBytes();
         FileInputStream input = null;
         try {
             out.write(res);
             input = new FileInputStream(imgpath);
+            byte[] buffer = new byte[1024 * 50];
+            while (true) {
+                int count = input.read(buffer);
+                if (count == -1) {
+                    break;
+                }
+                out.write(buffer, 0, count);
+            }
+            out.write("\r\n".getBytes());
+            out.write(("\r\n" + END_MP_BOUNDARY).getBytes());
+        } catch (IOException e) {
+            throw new WeiboException(e);
+        } finally {
+            if (null != input) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    throw new WeiboException(e);
+                }
+            }
+        }
+    }
+
+    private static void imageContentToUpload4Byte(OutputStream out, byte[] fileContent)
+            throws WeiboException {
+        if (fileContent == null) {
+            return;
+        }
+        StringBuilder temp = new StringBuilder();
+
+        temp.append(MP_BOUNDARY).append("\r\n");
+        temp.append("Content-Disposition: form-data; name=\"pic\"; filename=\"")
+                .append("news_image").append("\"\r\n");
+        String filetype = "image/png";
+        temp.append("Content-Type: ").append(filetype).append("\r\n\r\n");
+        byte[] res = temp.toString().getBytes();
+		ByteArrayInputStream input = null;
+        try {
+            out.write(res);
+			input = new ByteArrayInputStream(fileContent);
             byte[] buffer = new byte[1024 * 50];
             while (true) {
                 int count = input.read(buffer);

@@ -5,12 +5,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import com.easyhome.common.R;
-import com.easyhome.common.share.object.IShareObject;
-import com.easyhome.common.share.object.ShareAudio;
-import com.easyhome.common.share.object.ShareImage;
-import com.easyhome.common.share.object.ShareText;
-import com.easyhome.common.share.object.ShareVideo;
-import com.easyhome.common.share.object.ShareWebpage;
+import com.easyhome.common.share.logic.ShareManager;
+import com.easyhome.common.share.model.IShareObject;
+import com.easyhome.common.share.model.ShareAudio;
+import com.easyhome.common.share.model.ShareImage;
+import com.easyhome.common.share.model.ShareText;
+import com.easyhome.common.share.model.ShareVideo;
+import com.easyhome.common.share.model.ShareWebpage;
+
 
 /**
  * 分享测试数据

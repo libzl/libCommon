@@ -5,7 +5,7 @@ import com.easyhome.common.database.DatabaseActivity;
 import com.easyhome.common.download.DownloadActivity;
 import com.easyhome.common.media.MediaActivity;
 import com.easyhome.common.plugin.PluginActivity;
-import com.easyhome.common.share.ShareActivity;
+import com.easyhome.common.share.ui.ShareActivity;
 
 /**
  * 跳转指示器

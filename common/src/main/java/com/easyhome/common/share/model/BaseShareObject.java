@@ -1,6 +1,10 @@
-package com.easyhome.common.share.object;
+package com.easyhome.common.share.model;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Parcel;
+
+import com.tencent.mm.sdk.platformtools.Util;
 
 /**
  * 数据源基类
@@ -8,7 +12,7 @@ import android.graphics.Bitmap;
  * @author zhoulu
  * @date 13-12-11
  */
-public abstract class BaseShareObject implements IShareObject{
+public abstract class BaseShareObject implements IShareObject {
 
     private String title = "";
     private String secondTitle = "";
@@ -17,6 +21,26 @@ public abstract class BaseShareObject implements IShareObject{
     private String redirectUrl;
     private String[] thumbnailUrls;
 
+    public BaseShareObject() {
+    }
+
+    public BaseShareObject(Parcel source) {
+        title = source.readString();
+        secondTitle = source.readString();
+        message = source.readString();
+        int length = source.readInt();
+        if (length > 0) {
+            byte[] image = new byte[length];
+            source.readByteArray(image);
+            bitmap = BitmapFactory.decodeByteArray(image, 0, length);
+        }
+        redirectUrl = source.readString();
+        int N = source.readInt();
+        if (N > 0) {
+            thumbnailUrls = new String[N];
+            source.readStringArray(thumbnailUrls);
+        }
+    }
     /**
      * 设置标题
      * @param title
@@ -128,5 +152,30 @@ public abstract class BaseShareObject implements IShareObject{
     @Override
     public int getContentSize() {
         return 0;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeString(secondTitle);
+        dest.writeString(message);
+
+        if (bitmap != null && !bitmap.isRecycled()) {
+            byte[] image = Util.bmpToByteArray(bitmap, true);
+            dest.writeInt(image.length);
+            dest.writeByteArray(image);
+        } else {
+            dest.writeInt(0);
+        }
+        dest.writeString(redirectUrl);
+        dest.writeInt(thumbnailUrls == null ? -1 : thumbnailUrls.length);
+        if (thumbnailUrls != null && thumbnailUrls.length != 0) {
+            dest.writeStringArray(thumbnailUrls);
+        }
     }
 }

@@ -1,9 +1,10 @@
-package com.easyhome.common.share.option;
+package com.easyhome.common.share.logic;
 
 import android.content.Context;
 import android.content.Intent;
 
-import com.easyhome.common.share.object.IShareObject;
+import com.easyhome.common.share.model.IShareObject;
+
 
 /**
  * 分享选项接口
@@ -40,6 +41,12 @@ public interface IShareOption {
      */
     boolean isInstalledApp();
 
+	/**
+	 * 是否需要进行更新
+	 * @return
+	 */
+	boolean isNeedUpdate();
+
     /**
      * 获得ICON资源ID
      * @return
@@ -51,6 +58,13 @@ public interface IShareOption {
      * @return
      */
     String getName();
+
+    /**
+     * 获得最大输入字数
+     * @return
+	 * @param shareObject
+     */
+    int getMaxLength(IShareObject shareObject);
 
     /**
      * 检查API-SDK是否有效
@@ -102,9 +116,18 @@ public interface IShareOption {
 
         /**
          * 分享结果反馈
+         * @param option
          * @param success
          * @param message
          */
-        void onResponceShare(boolean success, String message);
+        void onResponceShare(IShareOption option, boolean success, String message);
+
+		/**
+		 * 授权结果反馈
+		 * @param option
+		 * @param success
+		 * @param message
+		 */
+		void onResponceAuth(IShareOption option, boolean success, String message);
     }
 }

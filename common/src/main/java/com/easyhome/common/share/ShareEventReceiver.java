@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import com.easyhome.common.share.logic.ShareManager;
+
 /**
  * 分享组件广播监听
  *

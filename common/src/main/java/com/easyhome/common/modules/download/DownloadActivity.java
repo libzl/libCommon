@@ -1,7 +1,7 @@
 package com.easyhome.common.modules.download;
 
-import com.easyhome.common.R;
 import com.easyhome.common.uikit.app.BaseFragment;
+import com.easyhome.sample.R;
 
 /**
  * <description>

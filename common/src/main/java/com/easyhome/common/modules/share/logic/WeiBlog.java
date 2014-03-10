@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.easyhome.common.R;
 import com.easyhome.common.core.http.AsyncWeiboRunner;
 import com.easyhome.common.core.http.RequestListener;
 import com.easyhome.common.modules.share.ShareConfiguration;
@@ -18,6 +17,7 @@ import com.easyhome.common.modules.share.ui.SinaAuthDialog;
 import com.easyhome.common.utils.BitmapUtil;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
+import com.easyhome.sample.R;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.MusicObject;
 import com.sina.weibo.sdk.api.TextObject;

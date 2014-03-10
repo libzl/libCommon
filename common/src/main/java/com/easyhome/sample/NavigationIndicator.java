@@ -1,4 +1,4 @@
-package com.easyhome.common;
+package com.easyhome.sample;
 
 import com.easyhome.common.modules.download.DownloadActivity;
 import com.easyhome.common.modules.media.MediaActivity;

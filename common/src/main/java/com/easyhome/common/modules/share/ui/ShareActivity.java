@@ -12,13 +12,13 @@ import android.view.ViewGroup;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.easyhome.common.R;
 import com.easyhome.common.modules.share.ShareTester;
 import com.easyhome.common.modules.share.logic.IShareOption;
 import com.easyhome.common.modules.share.logic.ShareManager;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.uikit.app.BaseFragment;
 import com.easyhome.common.utils.TextUtil;
+import com.easyhome.sample.R;
 
 /**
  * 分享展示UI

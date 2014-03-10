@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.easyhome.common.R;
 import com.easyhome.common.core.async.UiThreadHandler;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
@@ -13,6 +12,7 @@ import com.easyhome.common.utils.EnvironmentUtilities;
 import com.easyhome.common.utils.FileUtil;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.ToastUtils;
+import com.easyhome.sample.R;
 
 
 /**

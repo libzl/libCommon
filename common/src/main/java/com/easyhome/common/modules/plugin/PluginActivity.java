@@ -5,9 +5,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-import com.easyhome.common.R;
 import com.easyhome.common.uikit.app.BaseActionBarActivity;
 import com.easyhome.common.uikit.app.BaseFragment;
+import com.easyhome.sample.R;
 
 /**
  * <description>

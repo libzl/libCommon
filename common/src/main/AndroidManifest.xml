@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.easyhome.common"
+    package="com.easyhome.sample"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -20,7 +20,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".NavigationActivity"
+            android:name="com.easyhome.sample.NavigationActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -52,7 +52,7 @@
                 <data android:scheme="tencent100575846" />
             </intent-filter>
         </activity>
-        <receiver android:name=".modules.share.ShareEventReceiver"
+        <receiver android:name="com.easyhome.common.modules.share.ShareEventReceiver"
             android:permission="com.tencent.mm.plugin.permission.SEND">
             <!-- 微信 -->
             <intent-filter>

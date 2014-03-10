@@ -19,8 +19,8 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
-import com.easyhome.common.R;
 import com.easyhome.common.modules.share.ShareConfiguration;
+import com.easyhome.sample.R;
 import com.sina.weibo.sdk.auth.WeiboAuthListener;
 import com.sina.weibo.sdk.utils.Utility;
 

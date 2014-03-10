@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
-import com.easyhome.common.R;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
+import com.easyhome.sample.R;
 import com.tencent.mm.sdk.openapi.BaseReq;
 import com.tencent.mm.sdk.openapi.BaseResp;
 import com.tencent.mm.sdk.openapi.IWXAPI;

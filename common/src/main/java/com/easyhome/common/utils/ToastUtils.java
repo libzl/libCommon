@@ -2,7 +2,7 @@ package com.easyhome.common.utils;
 
 import android.content.Context;
 
-import com.easyhome.common.R;
+import com.easyhome.sample.R;
 
 public class ToastUtils {
 	public static void showShortToast(Context context, String text) {

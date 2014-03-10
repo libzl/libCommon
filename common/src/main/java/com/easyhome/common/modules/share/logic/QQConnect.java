@@ -6,9 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import com.easyhome.common.R;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
+import com.easyhome.sample.R;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;

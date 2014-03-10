@@ -5,12 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.easyhome.common.R;
 import com.easyhome.common.core.async.UiThreadHandler;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
+import com.easyhome.sample.R;
 import com.tencent.mm.sdk.platformtools.Util;
 import com.tencent.open.HttpStatusException;
 import com.tencent.open.NetworkUnavailableException;

@@ -1,7 +1,7 @@
 package com.easyhome.common.modules.media;
 
-import com.easyhome.common.R;
 import com.easyhome.common.uikit.app.BaseFragment;
+import com.easyhome.sample.R;
 
 /**
  * 播放模块数据

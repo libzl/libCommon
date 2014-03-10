@@ -9,7 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.easyhome.common.R;
+import com.easyhome.sample.R;
 
 class ToastInstance {
 	private static final int Y_OFFSET = 120;

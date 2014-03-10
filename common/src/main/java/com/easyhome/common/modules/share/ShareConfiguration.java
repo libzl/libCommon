@@ -1,7 +1,7 @@
 package com.easyhome.common.modules.share;
 
 
-import com.easyhome.common.R;
+import com.easyhome.sample.R;
 
 /**
  * 分享配置文件

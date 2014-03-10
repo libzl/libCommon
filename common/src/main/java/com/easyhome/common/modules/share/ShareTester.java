@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.easyhome.common.R;
 import com.easyhome.common.modules.share.logic.ShareManager;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.modules.share.model.ShareAudio;
@@ -12,6 +11,7 @@ import com.easyhome.common.modules.share.model.ShareImage;
 import com.easyhome.common.modules.share.model.ShareText;
 import com.easyhome.common.modules.share.model.ShareVideo;
 import com.easyhome.common.modules.share.model.ShareWebpage;
+import com.easyhome.sample.R;
 
 
 /**

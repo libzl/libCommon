@@ -1,11 +1,11 @@
 package com.easyhome.common;
 
-import com.easyhome.common.app.BaseFragment;
-import com.easyhome.common.database.DatabaseActivity;
-import com.easyhome.common.download.DownloadActivity;
-import com.easyhome.common.media.MediaActivity;
-import com.easyhome.common.plugin.PluginActivity;
-import com.easyhome.common.share.ui.ShareActivity;
+import com.easyhome.common.modules.download.DownloadActivity;
+import com.easyhome.common.modules.media.MediaActivity;
+import com.easyhome.common.modules.plugin.PluginActivity;
+import com.easyhome.common.modules.share.ui.ShareActivity;
+import com.easyhome.common.modules.tables.DatabaseActivity;
+import com.easyhome.common.uikit.app.BaseFragment;
 
 /**
  * 跳转指示器

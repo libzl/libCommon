@@ -52,7 +52,7 @@
                 <data android:scheme="tencent100575846" />
             </intent-filter>
         </activity>
-        <receiver android:name=".share.ShareEventReceiver"
+        <receiver android:name=".modules.share.ShareEventReceiver"
             android:permission="com.tencent.mm.plugin.permission.SEND">
             <!-- 微信 -->
             <intent-filter>

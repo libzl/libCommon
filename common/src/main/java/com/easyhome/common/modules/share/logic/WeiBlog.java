@@ -9,8 +9,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.Toast;
 
-import com.easyhome.common.core.http.AsyncWeiboRunner;
-import com.easyhome.common.core.http.RequestListener;
+import com.easyhome.common.modules.network.AsyncWeiboRunner;
+import com.easyhome.common.modules.network.RequestListener;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.modules.share.ui.SinaAuthDialog;

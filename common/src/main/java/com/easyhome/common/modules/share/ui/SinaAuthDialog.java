@@ -20,7 +20,6 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.easyhome.common.modules.share.ShareConfiguration;
-import com.easyhome.sample.R;
 import com.sina.weibo.sdk.auth.WeiboAuthListener;
 import com.sina.weibo.sdk.utils.Utility;
 
@@ -41,7 +40,7 @@ public class SinaAuthDialog extends Dialog {
 	private WeiboAuthListener mListener;
 
 	public SinaAuthDialog(Context context, String url, WeiboAuthListener mListener) {
-		super(context, R.style.Theme_Dialog_Transparent);
+		super(context, android.R.style.Theme_Dialog);
 		this.url = url;
 		this.mListener = mListener;
 	}
@@ -117,9 +116,9 @@ public class SinaAuthDialog extends Dialog {
 		this.mWebView.setLayoutParams(FILL);
 		this.mWebView.setVisibility(4);
 
-		this.mContent.setBackgroundColor(getContext().getResources().getColor(R.color.color_transparent));
+		this.mContent.setBackgroundColor(getContext().getResources().getColor(android.R.color.transparent));
 
-		webViewContainer.setBackgroundColor(getContext().getResources().getColor(R.color.color_transparent));
+		webViewContainer.setBackgroundColor(getContext().getResources().getColor(android.R.color.transparent));
 
 		RelativeLayout.LayoutParams lp0 = new RelativeLayout.LayoutParams(-1, -1);
 		this.webViewContainer.addView(this.mWebView, lp0);

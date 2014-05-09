@@ -1,0 +1,28 @@
+@startuml
+
+abstract class AbsCache
+
+interface Cachable
+interface Cache
+
+class CacheManage
+class CachePool
+class CacheSchema
+
+Cache <|-- AbsCache
+AbsCache <|-- FileCache
+AbsCache <|-- MemoryCache
+
+CacheManage <-- Cache
+CacheManage <-- CacheSchema
+CacheManage <-- CachePool
+
+CachePool<--Cachable
+
+enum Schema {
+    FAST
+    NORMAL
+}
+
+CacheSchema <-- Schema
+@enduml

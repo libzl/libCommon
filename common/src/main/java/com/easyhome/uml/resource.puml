@@ -1,0 +1,28 @@
+@startuml
+
+abstract class AbsFormat
+abstract class AbsResource
+interface IFormat
+interface IResource
+
+class Library
+class Reader
+class Writer
+
+IFormat <|-- AbsFormat
+AbsFormat <|-- BinFormat
+AbsFormat <|-- MapFormat
+AbsFormat <|-- JsonFormat
+AbsFormat <|-- XmlFormat
+
+AbsFormat <-- Reader
+AbsFormat <-- Writer
+
+IResource <|-- AbsResource
+AbsResource <|-- Config
+AbsResource <|-- FilePerference
+
+Library <-- IResource
+AbsResource <-- IFormat
+
+@enduml

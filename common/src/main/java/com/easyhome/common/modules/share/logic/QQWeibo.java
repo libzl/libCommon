@@ -5,11 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.easyhome.common.core.async.UiThreadHandler;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.URIUtil;
+import com.easyhome.common.utils.UiHandler;
 import com.easyhome.sample.R;
 import com.tencent.mm.sdk.platformtools.Util;
 import com.tencent.open.HttpStatusException;
@@ -254,7 +254,7 @@ public class QQWeibo extends QQConnect {
                                 mTencent.reAuth((Activity) mContext, mScope, QQWeibo.this);
                             }
                         };
-                        UiThreadHandler.post(r);
+                        UiHandler.post(r);
                     } else {
                         performShare(false, getString(R.string.share_status_auth_deny));
                     }

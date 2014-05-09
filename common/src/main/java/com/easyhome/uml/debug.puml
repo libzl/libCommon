@@ -1,0 +1,19 @@
+@startuml
+
+class Debug
+class Developer
+class DevelopDevice
+class StandardPrinter
+
+interface IPrinter
+abstract AbsPrinter
+
+IPrinter <|--AbsPrinter
+AbsPrinter <|--StandardPrinter
+
+Debug <-- Developer
+Debug <-- IPrinter
+
+Developer<-- DevelopDevice
+
+@enduml

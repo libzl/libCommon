@@ -5,13 +5,13 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.easyhome.common.core.async.UiThreadHandler;
 import com.easyhome.common.modules.share.ShareConfiguration;
 import com.easyhome.common.modules.share.model.IShareObject;
 import com.easyhome.common.utils.EnvironmentUtilities;
 import com.easyhome.common.utils.FileUtil;
 import com.easyhome.common.utils.TextUtil;
 import com.easyhome.common.utils.ToastUtils;
+import com.easyhome.common.utils.UiHandler;
 import com.easyhome.sample.R;
 
 
@@ -222,14 +222,14 @@ public abstract class BaseOption implements IShareOption {
 	public void notifyEvent(final String message) {
 
 		if (ShareConfiguration.ENABLE_SHOW_NOTIFY) {
-			UiThreadHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					if (!TextUtil.isEmpty(message)) {
-						Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-					}
-				}
-			});
+			UiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!TextUtil.isEmpty(message)) {
+                        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
 		}
 
 	}

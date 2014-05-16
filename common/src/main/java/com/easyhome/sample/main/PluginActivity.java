@@ -33,7 +33,7 @@ public class PluginActivity extends BaseActionBarActivity {
 
         @Override
         public CharSequence getTitle() {
-            return getString(R.string.title_section5);
+            return getString(R.string.title_section_plugin);
         }
 
         @Override

@@ -57,6 +57,9 @@ public class NavigationActivity extends BaseActionBarActivity
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         final BaseFragment fragment = NavigationIndicator.create(position);
+        if (fragment == null) {
+            return;
+        }
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()

@@ -28,7 +28,7 @@ public class ShareActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_share);
+        setContentView(R.layout.activity_container);
 
         ShareManager.getInstance().initOptions(this);
 
@@ -69,7 +69,7 @@ public class ShareActivity extends ActionBarActivity {
 
         @Override
         public CharSequence getTitle() {
-            return getString(R.string.title_section1);
+            return getString(R.string.title_section_share);
         }
 
         @Override

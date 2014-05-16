@@ -3,11 +3,12 @@
 
     <string name="app_name">公共组件</string>
 
-    <string name="title_section1">分享模块</string>
-    <string name="title_section2">媒体播放模块</string>
-    <string name="title_section3">下载模块</string>
-    <string name="title_section4">数据库模块</string>
-    <string name="title_section5">插件模块</string>
+    <string name="title_section_share">分享模块</string>
+    <string name="title_section_media">媒体播放模块</string>
+    <string name="title_section_download">下载模块</string>
+    <string name="title_section_database">数据库模块</string>
+    <string name="title_section_plugin">插件模块</string>
+    <string name="title_section_animator">动画模块</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

@@ -3,7 +3,7 @@ package com.easyhome.common.core.communicate;
 /**
  * TODO {Description}
  *
- * @author by kevin on 5/9/14.
+ * @author by kevin on 14-5-13.
  */
-public class CommunicateLine {
+public class Response {
 }

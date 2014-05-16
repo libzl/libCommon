@@ -13,7 +13,7 @@ public class MediaActivity {
 
         @Override
         public CharSequence getTitle() {
-            return getString(R.string.title_section2);
+            return getString(R.string.title_section_media);
         }
 
         public static BaseFragment newInstance() {

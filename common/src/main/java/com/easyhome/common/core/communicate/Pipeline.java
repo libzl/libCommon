@@ -1,9 +1,9 @@
 package com.easyhome.common.core.communicate;
 
 /**
- * TODO {Description}
+ * 通信管道
  *
  * @author by kevin on 5/9/14.
  */
-public class Socket {
+public interface Pipeline {
 }

@@ -14,7 +14,7 @@ public class DatabaseActivity {
     public static class DatabaseFragment extends BaseFragment {
         @Override
         public CharSequence getTitle() {
-            return getString(R.string.title_section4);
+            return getString(R.string.title_section_database);
         }
 
         public static BaseFragment newInstance() {

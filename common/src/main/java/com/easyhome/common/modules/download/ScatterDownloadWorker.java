@@ -34,11 +34,6 @@ class ScatterDownloadWorker extends RunWorker {
 
     }
 
-    @Override
-	public void run() {
-
-	}
-
 	void runPart(Part part){
 
 	}

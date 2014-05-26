@@ -119,17 +119,20 @@ public class Downloader implements IDownloader {
     /**
      * 通知回调
      * @param item
-     * @param state
+     *
      */
-    void notifyListeners(Downloadable item, RunState state) {
+    void notifyListeners(Downloadable item) {
 
-        if (!mInited) {
+        if (!mInited || item == null) {
             return;
         }
+        //update download list
+        mDownloadList.notifyStatedChanged(item);
 
+        //notify listeners
         for (int i = 0; i < mListeners.size(); i++) {
             DownloadListener listener = mListeners.get(i);
-            switch (state) {
+            switch (item.getState()) {
                 case PREPARE:
                     listener.onPrepare(item);
                     break;

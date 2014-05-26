@@ -108,4 +108,12 @@ public class DownloadList {
         }
         return null;
     }
+
+    /**
+     * 针对下载状态变化更新数据
+     * @param item
+     */
+    public void notifyStatedChanged(Downloadable item) {
+
+    }
 }

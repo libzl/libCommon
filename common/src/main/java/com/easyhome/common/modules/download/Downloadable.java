@@ -15,6 +15,13 @@ public interface Downloadable {
     public RunState getState();
 
     /**
+     * 设置状态
+     *
+     * @param state
+     */
+    void setState(RunState state);
+
+    /**
      * 下载项的网络获取链接
      *
      * @return 网络下载url
@@ -77,4 +84,6 @@ public interface Downloadable {
      * @return
      */
     public Downloadable fromJson(String json);
+
+
 }

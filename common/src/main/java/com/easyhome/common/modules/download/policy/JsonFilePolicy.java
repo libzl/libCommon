@@ -9,12 +9,12 @@ package com.easyhome.common.modules.download.policy;
 public class JsonFilePolicy extends HibernatePolicy {
 
 	@Override
-	protected void prepare() {
+    public void prepare() {
 
 	}
 
 	@Override
-	protected void commit() {
+	public void commit() {
 
 	}
 }

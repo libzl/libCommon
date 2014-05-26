@@ -6,15 +6,21 @@ package com.easyhome.common.modules.download.policy;
  * @author zhoulu
  * @date 2014/5/23
  */
-public class DatabasePolicy extends HibernatePolicy {
+public abstract class DatabasePolicy<T> extends HibernatePolicy {
 
 	@Override
-	protected void prepare() {
+    public void prepare() {
 
 	}
 
 	@Override
-	protected void commit() {
+    public void commit() {
 
 	}
+
+    /**
+     * 获得数据库表头
+     * @return
+     */
+    public abstract T getTable();
 }

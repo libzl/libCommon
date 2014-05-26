@@ -1,5 +1,7 @@
 package com.easyhome.common.modules.download;
 
+import java.util.List;
+
 /**
  * 离散式下载流程
  *
@@ -8,7 +10,31 @@ package com.easyhome.common.modules.download;
  */
 class ScatterDownloadWorker extends RunWorker {
 
-	@Override
+    ScatterDownloadWorker(Downloader downloader,IDownloadConfig config) {
+        super(downloader, config);
+    }
+
+    @Override
+    public void start(Downloadable item) {
+
+    }
+
+    @Override
+    public void stop(Downloadable item) {
+
+    }
+
+    @Override
+    public void stopBatch(List<Downloadable> list) {
+
+    }
+
+    @Override
+    public void release() {
+
+    }
+
+    @Override
 	public void run() {
 
 	}

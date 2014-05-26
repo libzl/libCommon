@@ -4,7 +4,6 @@ import com.easyhome.common.modules.download.IDownloadConfig;
 import com.easyhome.common.modules.download.policy.CollectionPolicy;
 import com.easyhome.common.modules.download.policy.HibernatePolicy;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -77,7 +76,7 @@ public class DownloadConfig implements IDownloadConfig {
 	}
 
 	@Override
-	public Executor getExecutor() {
+	public ExecutorService getExecutor() {
 		return executorService;
 	}
 

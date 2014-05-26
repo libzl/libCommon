@@ -1,5 +1,7 @@
 package com.easyhome.common.modules.download;
 
+import java.util.List;
+
 /**
  *
  */
@@ -7,13 +9,31 @@ class DownloadWorker extends RunWorker {
 
 	private Downloadable mDownloadable;
 
+    DownloadWorker(Downloader downloader, IDownloadConfig config) {
+        super(downloader, config);
+    }
 
-	DownloadWorker(Downloadable downloadable) {
-		mDownloadable = downloadable;
-	}
+    @Override
+    public void start(Downloadable item) {
 
+    }
 
-	@Override
+    @Override
+    public void stop(Downloadable item) {
+
+    }
+
+    @Override
+    public void stopBatch(List<Downloadable> list) {
+
+    }
+
+    @Override
+    public void release() {
+
+    }
+
+    @Override
 	public void run() {
 		try {
 			runPrepare();

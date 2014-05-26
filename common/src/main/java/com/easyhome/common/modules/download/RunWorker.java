@@ -1,5 +1,7 @@
 package com.easyhome.common.modules.download;
 
+import java.util.List;
+
 /**
  * 下载工作流程接口
  *
@@ -9,6 +11,13 @@ package com.easyhome.common.modules.download;
 public abstract class RunWorker implements Runnable {
 
 	private RunState mState = RunState.PREPARE;
+    protected IDownloadConfig mConfig;
+    protected Downloader mDownloader;
+
+    RunWorker(Downloader downloader, IDownloadConfig config) {
+        mConfig = config;
+        mDownloader = downloader;
+    }
 
 	/**
 	 * 检查当前状态是否正确
@@ -25,20 +34,37 @@ public abstract class RunWorker implements Runnable {
 				}
 				break;
 			case START:
-				if (state == RunState.PREPARE
-						|| state == RunState.END) {
+				if (state == RunState.PREPARE) {
 					stateRight = true;
 				}
 				break;
 			case RESUME:
+                if (state == RunState.PAUSE) {
+                    stateRight = true;
+                }
 				break;
 			case PROGRESS:
+                if (state == RunState.START
+                        || state == RunState.RESUME) {
+                    stateRight = true;
+                }
 				break;
 			case PAUSE:
+                if (state == RunState.PREPARE
+                        || state == RunState.START
+                        || state == RunState.RESUME
+                        || state == RunState.PROGRESS) {
+                    stateRight = true;
+                }
 				break;
 			case END:
+                if (state == RunState.PREPARE
+                        || state == RunState.PROGRESS) {
+                    stateRight = true;
+                }
 				break;
 			case ERROR:
+                stateRight = true;
 				break;
 		}
 
@@ -50,4 +76,27 @@ public abstract class RunWorker implements Runnable {
 		}
 
 	}
+
+    /**
+     * 执行下载
+     * @param item
+     */
+    public abstract void start(Downloadable item);
+
+    /**
+     * 停止下载
+     * @param item
+     */
+    public abstract void stop(Downloadable item);
+
+    /**
+     * 批量停止下载
+     * @param list
+     */
+    public abstract void stopBatch(List<Downloadable> list);
+
+    /**
+     * 释放资源
+     */
+    public abstract void release();
 }

@@ -3,7 +3,7 @@ package com.easyhome.common.modules.download;
 import com.easyhome.common.modules.download.policy.CollectionPolicy;
 import com.easyhome.common.modules.download.policy.HibernatePolicy;
 
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 下载器配置
@@ -17,7 +17,7 @@ public interface IDownloadConfig {
 	 * 提供线程池
 	 * @return
 	 */
-	public Executor getExecutor();
+	public ExecutorService getExecutor();
 
 	/**
 	 * 提供收集排序策略

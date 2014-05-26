@@ -8,5 +8,9 @@ import com.easyhome.common.modules.download.policy.DatabasePolicy;
  * @author zhoulu
  * @date 2014/5/23
  */
-public class DownloadTablePolicy extends DatabasePolicy{
+public class DownloadTablePolicy extends DatabasePolicy {
+    @Override
+    public Object getTable() {
+        return null;
+    }
 }

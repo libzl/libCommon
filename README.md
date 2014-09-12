@@ -1,4 +1,1 @@
-Common libzl
-======
-
-Common ..
+Android Common Framework for developers to build an app quickly.
